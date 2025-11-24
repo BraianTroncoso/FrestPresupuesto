@@ -215,6 +215,7 @@ function recolectarDatos() {
             nombre: document.getElementById('nombreCliente').value,
             telefono: document.getElementById('telefonoCliente').value,
             ciudad: document.getElementById('ciudadCliente').value,
+            destinoFinal: document.getElementById('destinoFinal').value,
             cantidadPasajeros: document.getElementById('cantidadPasajeros').value
         },
         presupuesto: {
@@ -449,6 +450,7 @@ function cargarPresupuestoEnFormulario(presupuesto) {
     document.getElementById('nombreCliente').value = presupuesto.cliente?.nombre || '';
     document.getElementById('telefonoCliente').value = presupuesto.cliente?.telefono || '';
     document.getElementById('ciudadCliente').value = presupuesto.cliente?.ciudad || '';
+    document.getElementById('destinoFinal').value = presupuesto.cliente?.destinoFinal || '';
     document.getElementById('cantidadPasajeros').value = presupuesto.cliente?.cantidadPasajeros || '';
 
     // Datos del presupuesto

@@ -93,8 +93,8 @@ function generarHTML(datos) {
     // Ruta del viaje
     const primerVuelo = vuelos[0] || {};
     const ultimoVuelo = vuelos[vuelos.length - 1] || primerVuelo;
-    const ciudadOrigen = cliente.ciudad || primerVuelo.origen || 'Origen';
-    const ciudadDestino = ultimoVuelo.destino || 'Destino';
+    const ciudadOrigen = primerVuelo.origen || 'Origen';
+    const ciudadDestino = cliente.destinoFinal || ultimoVuelo.destino || 'Destino';
 
     // Fechas vuelos
     const fechasVuelo = vuelos.filter(v => v.fecha).map(v => v.fecha).sort();

@@ -118,8 +118,8 @@ async function exportarPDFjsPDF(datos) {
 
     const primerVuelo = datos.vuelos[0] || {};
     const ultimoVuelo = datos.vuelos[datos.vuelos.length - 1] || primerVuelo;
-    const origen = datos.cliente.ciudad || primerVuelo.origen || 'Origen';
-    const destino = ultimoVuelo.destino || 'Destino';
+    const origen = primerVuelo.origen || 'Origen';
+    const destino = datos.cliente.destinoFinal || ultimoVuelo.destino || 'Destino';
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
