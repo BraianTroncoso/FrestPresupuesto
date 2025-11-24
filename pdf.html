@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview PDF - Presupuesto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .pdf-container {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        /* BARRA AZUL TOP */
+        .barra-azul-top {
+            background: #435c91;
+            height: 4mm;
+            width: 100%;
+        }
+
+        /* BARRA AZUL BOTTOM */
+        .barra-azul-bottom {
+            background: #435c91;
+            height: 4mm;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5mm 10mm;
+            background: white;
+        }
+
+        .logo img {
+            height: 18mm;
+        }
+
+        .datos-agente {
+            text-align: right;
+            font-size: 9px;
+            color: #1e293b;
+        }
+
+        .datos-agente p {
+            margin: 2px 0;
+        }
+
+        .datos-agente strong {
+            font-weight: bold;
+        }
+
+        /* BARRA DESTINO */
+        .barra-destino {
+            display: flex;
+            width: 100%;
+            position: relative;
+        }
+
+        .destino-info {
+            background: #ed6e1a;
+            width: 60%;
+            padding: 4mm 10mm;
+            color: white;
+            position: relative;
+        }
+
+        .destino-info::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: 0;
+            height: 100%;
+            width: 20px;
+            background: white;
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        }
+
+        .destino-info h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .destino-info p {
+            font-size: 14px;
+        }
+
+        .numero-presupuesto {
+            background: #435c91;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .numero-presupuesto::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 20px;
+            background: white;
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+
+        /* DATOS CLIENTE */
+        .seccion {
+            padding: 4mm 10mm;
+        }
+
+        .seccion-header {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 3mm;
+        }
+
+        .seccion-header img {
+            height: 70px;
+            width: auto;
+            margin-left: -10px;
+        }
+
+        .seccion-header h3 {
+            color: #000000;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .datos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2mm;
+            font-size: 10px;
+            color: #1e293b;
+        }
+
+        .datos-grid p strong {
+            font-weight: bold;
+        }
+
+        .separador {
+            border-bottom: 1px solid #e2e8f0;
+            margin: 2mm 10mm;
+        }
+
+        /* BARRA TITULO SECCION */
+        .barra-titulo {
+            background: #ed6e1a;
+            color: white;
+            padding: 3mm 10mm;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* VUELOS */
+        .vuelos-container {
+            padding: 4mm 0;
+        }
+
+        .vuelo {
+            padding: 2mm 10mm;
+            display: flex;
+            align-items: center;
+            gap: 5mm;
+        }
+
+        .vuelo-badge {
+            background: #435c91;
+            color: white;
+            padding: 1mm 3mm;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+
+        .vuelo-tiempo {
+            text-align: center;
+        }
+
+        .vuelo-tiempo .hora {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .vuelo-tiempo .codigo {
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .vuelo-flecha {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .vuelo-flecha .duracion {
+            font-size: 9px;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+
+        .vuelo-flecha .linea-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .vuelo-flecha .linea {
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, #435c91 0%, #ed6e1a 100%);
+            position: relative;
+            border-radius: 1px;
+        }
+
+        .vuelo-flecha .avion {
+            position: absolute;
+            font-size: 16px;
+            color: #435c91;
+        }
+
+        .vuelo-flecha .avion.ida {
+            right: 10%;
+            transform: rotate(0deg);
+        }
+
+        .vuelo-flecha .avion.vuelta {
+            left: 10%;
+            transform: rotate(180deg);
+        }
+
+        .vuelo-flecha .escalas {
+            font-size: 9px;
+            color: #ed6e1a;
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        .vuelo-nota {
+            font-size: 7px;
+            color: #64748b;
+            text-align: right;
+            max-width: 60mm;
+        }
+
+        /* HOTEL */
+        .hotel {
+            display: flex;
+            gap: 5mm;
+            padding: 4mm 10mm;
+        }
+
+        .hotel-imagen {
+            width: 55mm;
+            height: 35mm;
+            background: #f4f4f4;
+            border: 1px solid #e2e8f0;
+            border-radius: 2mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 9px;
+        }
+
+        .hotel-datos {
+            font-size: 10px;
+            color: #1e293b;
+        }
+
+        .hotel-datos p {
+            margin: 2mm 0;
+        }
+
+        .hotel-datos strong {
+            font-weight: bold;
+        }
+
+        /* MAS INFO */
+        .info-container {
+            padding: 3mm 10mm 4mm 10mm;
+            overflow: hidden;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 1mm 0;
+            font-size: 11px;
+            color: #1e293b;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            object-position: center;
+            flex-shrink: 0;
+            margin-left: 0;
+            margin-right: 3mm;
+        }
+
+        .info-texto strong {
+            font-weight: bold;
+        }
+
+        /* VALORES */
+        .valores-box {
+            background: #ed6e1a;
+            color: white;
+            padding: 2mm 4mm;
+            text-align: right;
+            width: auto;
+            position: absolute;
+            bottom: 24mm;
+            right: 0;
+        }
+
+        .valores-box p {
+            margin: 0.5mm 0;
+            white-space: nowrap;
+        }
+
+        .valores-box .por-persona {
+            font-size: 9px;
+        }
+
+        .valores-box .total {
+            font-size: 11px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="pdf-container">
+        <!-- BARRA AZUL TOP -->
+        <div class="barra-azul-top"></div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">
+                <img src="assets/Logo.png" alt="Freest Travel">
+            </div>
+            <div class="datos-agente">
+                <p><strong>Cadastur:</strong> 37.206.629/0001-49</p>
+                <p><strong>Agente:</strong> Alejandra Dagayo</p>
+                <p><strong>Teléfono:</strong> (351) 2537785</p>
+                <p><strong>Email:</strong> Alejandrafreest@gmail.com</p>
+            </div>
+        </div>
+
+        <!-- BARRA DESTINO -->
+        <div class="barra-destino">
+            <div class="destino-info">
+                <h2>Córdoba - Buzios</h2>
+                <p>2 adultos: Transfer IN / OUT + Seguro de Viaje</p>
+            </div>
+            <div class="numero-presupuesto">
+                N° 0115
+            </div>
+        </div>
+
+        <!-- DATOS CLIENTE -->
+        <div class="seccion">
+            <div class="seccion-header">
+                <img src="assets/Usuario.png" alt="Usuario">
+                <h3>Datos del cliente</h3>
+            </div>
+            <div class="datos-grid">
+                <p><strong>Nombre:</strong> Marcos Suegro</p>
+                <p><strong>Ciudad:</strong> Córdoba</p>
+                <p><strong>Fecha:</strong> 13/11/2025</p>
+                <p><strong>Teléfono:</strong> 3517063190</p>
+            </div>
+        </div>
+
+        <div class="separador"></div>
+
+        <!-- VUELOS -->
+        <div class="barra-titulo">Trechos aéreos - 25/02/2026 al 06/03/2026</div>
+
+        <div class="vuelos-container">
+            <div class="vuelo">
+                <div>
+                    <span class="vuelo-badge">LATAM</span>
+                </div>
+                <div class="vuelo-tiempo">
+                    <div class="hora">17:30</div>
+                    <div class="codigo">COR</div>
+                </div>
+                <div class="vuelo-flecha">
+                    <div class="duracion">6h 10m</div>
+                    <div class="linea-container">
+                        <div class="linea"></div>
+                        <span class="avion ida">✈</span>
+                    </div>
+                    <div class="escalas">1 escala GRU</div>
+                </div>
+                <div class="vuelo-tiempo">
+                    <div class="hora">23:40</div>
+                    <div class="codigo">GRU</div>
+                </div>
+            </div>
+
+            <div class="vuelo">
+                <div>
+                    <span class="vuelo-badge">LATAM</span>
+                </div>
+                <div class="vuelo-tiempo">
+                    <div class="hora">23:55</div>
+                    <div class="codigo">GIG</div>
+                </div>
+                <div class="vuelo-flecha">
+                    <div class="duracion">6h 50m</div>
+                    <div class="linea-container">
+                        <div class="linea"></div>
+                        <span class="avion vuelta">✈</span>
+                    </div>
+                    <div class="escalas">1 escala SDU</div>
+                </div>
+                <div class="vuelo-tiempo">
+                    <div class="hora">10:00+1</div>
+                    <div class="codigo">COR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOSPEDAJE -->
+        <div class="barra-titulo">Hospedaje</div>
+
+        <div class="hotel">
+            <div class="hotel-imagen">Imagen del hotel</div>
+            <div class="hotel-datos">
+                <p><strong>Hotel:</strong> Hotel Brisa Tower</p>
+                <p><strong>Cuarto:</strong> 2 Matrimoniales Premium (Vista al mar)</p>
+                <p><strong>Entrada:</strong> 25/02/2026</p>
+                <p><strong>Salida:</strong> 06/03/2026</p>
+                <p><strong>Regimen:</strong> Desayuno incluido</p>
+            </div>
+        </div>
+
+        <!-- MAS INFORMACION -->
+        <div class="barra-titulo">Más información</div>
+
+        <div class="info-container">
+            <div class="info-item">
+                <img class="info-icon" src="assets/Cotizacion.png" alt="Cotización">
+                <div class="info-texto">
+                    <strong>Cotización:</strong> Precio referido a dólar billete, caso el pago sea realizado en pesos argentinos, deberá ser considerado el valor referente al tipo de cambio del día.
+                </div>
+            </div>
+
+            <div class="info-item">
+                <img class="info-icon" src="assets/Plazo.png" alt="Plazo">
+                <div class="info-texto">
+                    <strong>Plazo de la propuesta:</strong> Las tarifas seleccionadas están sujetas a disponibilidad y pueden cambiar sin previo aviso. Solo la emisión del voucher garantiza la tarifa.
+                </div>
+            </div>
+        </div>
+
+        <!-- VALORES -->
+        <div class="valores-box">
+            <p class="por-persona">VALOR POR PERSONA: USD 1.350</p>
+            <p class="total">VALOR TOTAL: USD 5.400</p>
+        </div>
+
+        <!-- BARRA AZUL BOTTOM -->
+        <div class="barra-azul-bottom"></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Presupuestos de Viaje</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://freest.com.br/wp-content/uploads/2022/06/logo-site-1-1-1024x188.png" alt="Freest Travel" class="logo">
+            <h1><span class="text-primary">Presupuesto</span> <span class="text-secondary">de Viaje</span></h1>
+        </header>
+
+        <form id="budgetForm">
+            <!-- Sección Agente -->
+            <section class="form-section">
+                <h2>Datos del Agente</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombreAgente">Nombre del Agente</label>
+                        <input type="text" id="nombreAgente" name="nombreAgente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailAgente">Email del Agente</label>
+                        <input type="email" id="emailAgente" name="emailAgente" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="cadastur">Cadastur</label>
+                        <input type="text" id="cadastur" name="cadastur" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefonoAgente">Teléfono Agente</label>
+                        <input type="tel" id="telefonoAgente" name="telefonoAgente" placeholder="(229) 989-8449">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Cliente -->
+            <section class="form-section">
+                <h2>Datos del Cliente</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombreCliente">Nombre del Cliente</label>
+                        <input type="text" id="nombreCliente" name="nombreCliente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefonoCliente">Teléfono Cliente</label>
+                        <input type="tel" id="telefonoCliente" name="telefonoCliente" placeholder="(229) 989-8449">
+                    </div>
+                    <div class="form-group">
+                        <label for="ciudadCliente">Ciudad del Cliente</label>
+                        <input type="text" id="ciudadCliente" name="ciudadCliente">
+                    </div>
+                    <div class="form-group">
+                        <label for="cantidadPasajeros">Cantidad de Pasajeros</label>
+                        <input type="number" id="cantidadPasajeros" name="cantidadPasajeros" min="1" placeholder="Ej: 2">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Presupuesto -->
+            <section class="form-section">
+                <h2>Datos del Presupuesto</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="numeroPresupuesto">Número de Presupuesto</label>
+                        <input type="text" id="numeroPresupuesto" name="numeroPresupuesto" readonly onclick="habilitarEdicionPresupuesto(this)">
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaPresupuesto">Fecha de Presupuesto</label>
+                        <input type="date" id="fechaPresupuesto" name="fechaPresupuesto">
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoViaje">Tipo de Viaje</label>
+                        <select id="tipoViaje" name="tipoViaje" onchange="actualizarVuelosPorTipo()">
+                            <option value="">Seleccionar...</option>
+                            <option value="ida">Solo Ida</option>
+                            <option value="idaVuelta">Ida y Vuelta</option>
+                            <option value="multiDestino">Multi-destino</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Vuelos -->
+            <section class="form-section" id="seccionVuelos" style="display:none;">
+                <h2>Vuelos</h2>
+                <div id="vuelosContainer">
+                    <!-- Vuelos dinámicos se agregan aquí -->
+                </div>
+                <button type="button" class="btn-add" id="btnAgregarVuelo" onclick="agregarVuelo()" style="display:none;">+ Agregar Vuelo</button>
+            </section>
+
+            <!-- Sección Hospedaje -->
+            <section class="form-section">
+                <h2>Hospedaje</h2>
+                <div id="hospedajeContainer">
+                    <!-- Hoteles dinámicos se agregan aquí -->
+                </div>
+                <button type="button" class="btn-add" onclick="agregarHotel()">+ Agregar Hotel</button>
+            </section>
+
+            <!-- Sección Transfer (solo Si/No) -->
+            <section class="form-section">
+                <h2>Transfer</h2>
+                <div class="toggle-siNo">
+                    <label>¿Incluye Transfer?</label>
+                    <div class="toggle-buttons">
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeTransfer', 'no')">No</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeTransfer', 'si')">Sí</button>
+                    </div>
+                    <input type="hidden" id="incluyeTransfer" value="no">
+                </div>
+            </section>
+
+            <!-- Sección Seguro (solo Si/No) -->
+            <section class="form-section">
+                <h2>Seguro de Viaje</h2>
+                <div class="toggle-siNo">
+                    <label>¿Incluye Seguro?</label>
+                    <div class="toggle-buttons">
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeSeguro', 'no')">No</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeSeguro', 'si')">Sí</button>
+                    </div>
+                    <input type="hidden" id="incluyeSeguro" value="no">
+                </div>
+            </section>
+
+            <!-- Sección Alquiler Vehículo (solo Si/No) -->
+            <section class="form-section">
+                <h2>Alquiler de Vehículo</h2>
+                <div class="toggle-siNo">
+                    <label>¿Incluye Alquiler de Vehículo?</label>
+                    <div class="toggle-buttons">
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeVehiculo', 'no')">No</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeVehiculo', 'si')">Sí</button>
+                    </div>
+                    <input type="hidden" id="incluyeVehiculo" value="no">
+                </div>
+            </section>
+
+            <!-- Sección Totales -->
+            <section class="form-section totales">
+                <h2>Valores</h2>
+                <div class="toggle-siNo" style="margin-bottom: 15px;">
+                    <label>Moneda</label>
+                    <div class="toggle-buttons">
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'moneda', 'USD')">USD</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'moneda', 'BRL')">BRL</button>
+                    </div>
+                    <input type="hidden" id="moneda" value="USD">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="valorPorPersona">Valor por Persona</label>
+                        <input type="number" id="valorPorPersona" name="valorPorPersona" step="0.01" placeholder="Ej: 1500.00" oninput="calcularValorTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label for="valorTotal">Valor Total <small>(editable)</small></label>
+                        <input type="number" id="valorTotal" name="valorTotal" step="0.01" placeholder="Auto-calculado">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Botones de acción -->
+            <div class="form-actions">
+                <button type="button" class="btn-export btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
+                <button type="button" class="btn-export btn-excel" onclick="exportarExcel()">Exportar Excel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Templates para secciones dinámicas -->
+    <template id="vueloTemplate">
+        <div class="dynamic-item vuelo-item">
+            <div class="item-header">
+                <h3>Vuelo <span class="item-number"></span></h3>
+                <div class="item-actions">
+                    <button type="button" class="btn-edit" onclick="toggleEditarVuelo(this)" style="display:none;">Editar</button>
+                    <button type="button" class="btn-remove" onclick="removerItem(this)">×</button>
+                </div>
+            </div>
+            <!-- Input principal -->
+            <div class="vuelo-input-principal">
+                <div class="form-group">
+                    <label>Número de Vuelo</label>
+                    <input type="text" class="vuelo-numero" placeholder="Ej: LA8059" oninput="habilitarFechaVuelo(this)">
+                </div>
+                <div class="form-group">
+                    <label>Fecha del Vuelo</label>
+                    <input type="date" class="vuelo-fecha" disabled>
+                </div>
+                <button type="button" class="btn-buscar-vuelo" onclick="buscarVueloBtn(this)" disabled>Buscar</button>
+            </div>
+            <!-- Info del vuelo (solo lectura por defecto) -->
+            <div class="vuelo-info" style="display:none;">
+                <div class="vuelo-resumen">
+                    <span class="vuelo-ruta"></span>
+                    <span class="vuelo-horario"></span>
+                    <span class="vuelo-airline"></span>
+                </div>
+            </div>
+            <!-- Campos editables (ocultos por defecto) -->
+            <div class="vuelo-campos-editables" style="display:none;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Origen</label>
+                        <input type="text" class="vuelo-origen">
+                    </div>
+                    <div class="form-group">
+                        <label>Destino</label>
+                        <input type="text" class="vuelo-destino">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora Salida</label>
+                        <input type="time" class="vuelo-hora-salida">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora Llegada</label>
+                        <input type="time" class="vuelo-hora-llegada">
+                    </div>
+                    <div class="form-group">
+                        <label>Aerolínea</label>
+                        <input type="text" class="vuelo-aerolinea">
+                    </div>
+                    <div class="form-group">
+                        <label>Duración</label>
+                        <input type="text" class="vuelo-duracion">
+                    </div>
+                    <div class="form-group">
+                        <label>Escalas</label>
+                        <input type="text" class="vuelo-escalas">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="hotelTemplate">
+        <div class="dynamic-item hotel-item">
+            <div class="item-header">
+                <h3>Hotel <span class="item-number"></span></h3>
+                <button type="button" class="btn-remove" onclick="removerItem(this)">×</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre del Hotel</label>
+                    <input type="text" class="hotel-nombre" placeholder="Ej: Seara">
+                </div>
+                <div class="form-group">
+                    <label>URL del Hotel</label>
+                    <input type="url" class="hotel-url" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Cuarto</label>
+                    <select class="hotel-tipo-cuarto">
+                        <option value="">Seleccionar...</option>
+                        <option value="simple">Simple</option>
+                        <option value="doble">Doble</option>
+                        <option value="triple">Triple</option>
+                        <option value="cuadruple">Cuádruple</option>
+                        <option value="suite">Suite</option>
+                        <option value="departamento">Departamento</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha Entrada</label>
+                    <input type="date" class="hotel-fecha-entrada">
+                </div>
+                <div class="form-group">
+                    <label>Fecha Salida</label>
+                    <input type="date" class="hotel-fecha-salida">
+                </div>
+                <div class="form-group">
+                    <label>Cantidad de Noches</label>
+                    <input type="number" class="hotel-noches" min="1" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Régimen</label>
+                    <select class="hotel-regimen">
+                        <option value="">Seleccionar...</option>
+                        <option value="soloAlojamiento">Solo Alojamiento</option>
+                        <option value="desayuno">Con Desayuno</option>
+                        <option value="mediaPension">Media Pensión</option>
+                        <option value="pensionCompleta">Pensión Completa</option>
+                        <option value="todoIncluido">Todo Incluido</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Imagen del Hotel</label>
+                    <input type="file" class="hotel-imagen" accept="image/*">
+                </div>
+            </div>
+        </div>
+    </template>
+
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <script src="js/flights.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/pdf-export.js"></script>
+    <script src="js/excel-export.js"></script>
+</body>
+</html>
