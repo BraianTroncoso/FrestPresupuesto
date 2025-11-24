@@ -505,3 +505,254 @@ input[type="file"] {
     font-size: 0.85rem;
     margin-left: 10px;
 }
+
+/* Botones guardar e historial */
+.btn-guardar {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-guardar:hover {
+    background: var(--primary-hover);
+}
+
+.btn-historial {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-historial:hover {
+    background: #1570c9;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--surface);
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.modal-header h2 {
+    color: white;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(80vh - 80px);
+}
+
+/* Filtros historial */
+.historial-filtros {
+    margin-bottom: 20px;
+}
+
+.historial-filtros input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+}
+
+.historial-filtros input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Lista de presupuestos */
+.lista-presupuestos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.presupuesto-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.presupuesto-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.presupuesto-info {
+    flex: 1;
+}
+
+.presupuesto-numero {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.presupuesto-cliente {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-left: 10px;
+}
+
+.presupuesto-fecha {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.presupuesto-valor {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.presupuesto-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.btn-accion {
+    padding: 8px 15px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-editar {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-editar:hover {
+    background: #1570c9;
+}
+
+.btn-duplicar {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-duplicar:hover {
+    background: var(--primary-hover);
+}
+
+.btn-eliminar {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-eliminar:hover {
+    background: #dc2626;
+}
+
+/* Loading en lista */
+.lista-presupuestos.loading {
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lista-presupuestos.loading::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+/* Modo edición */
+.editing-mode .form-section {
+    border-left: 4px solid var(--primary-color);
+}
+
+.editing-badge {
+    display: none;
+    background: var(--primary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 15px;
+}
+
+.editing-mode .editing-badge {
+    display: inline-block;
+}
+
+/* Btn nuevo */
+.btn-nuevo {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-nuevo:hover {
+    background: var(--primary-color);
+    color: white;
+}

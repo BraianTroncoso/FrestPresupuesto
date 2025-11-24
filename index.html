@@ -166,9 +166,12 @@
 
             <!-- Botones de acción -->
             <div class="form-actions">
+                <button type="button" class="btn-export btn-guardar" onclick="guardarPresupuestoActual()">Guardar</button>
+                <button type="button" class="btn-export btn-historial" onclick="abrirHistorial()">Historial</button>
                 <button type="button" class="btn-export btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
                 <button type="button" class="btn-export btn-excel" onclick="exportarExcel()">Exportar Excel</button>
             </div>
+            <input type="hidden" id="presupuestoId" value="">
         </form>
     </div>
 
@@ -297,11 +300,34 @@
     </template>
 
 
+    <!-- Modal Historial -->
+    <div id="modalHistorial" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Historial de Presupuestos</h2>
+                <button class="modal-close" onclick="cerrarHistorial()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="historial-filtros">
+                    <input type="text" id="buscarCliente" placeholder="Buscar por cliente..." oninput="filtrarHistorial()">
+                </div>
+                <div id="listaPresupuestos" class="lista-presupuestos">
+                    <!-- Lista de presupuestos cargados dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="config.js"></script>
+    <script src="js/firebase-db.js"></script>
     <script src="js/flights.js"></script>
     <script src="js/app.js"></script>
     <script src="js/pdf-export.js"></script>
