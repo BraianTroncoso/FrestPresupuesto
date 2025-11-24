@@ -1,6 +1,10 @@
+// Variable para almacenar presupuestos cargados
+let presupuestosCargados = [];
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     initForm();
+    initFirebase();
 });
 
 function initForm() {
@@ -294,4 +298,310 @@ function formatearMoneda(valor, moneda = null) {
         style: 'currency',
         currency: currency
     }).format(valor);
+}
+
+// ==================== GUARDAR PRESUPUESTO ====================
+
+async function guardarPresupuestoActual() {
+    const datos = recolectarDatos();
+    const presupuestoId = document.getElementById('presupuestoId').value;
+
+    // Validación básica
+    if (!datos.cliente.nombre) {
+        showToast('Por favor ingresa el nombre del cliente', 'error');
+        return;
+    }
+
+    try {
+        let resultado;
+        if (presupuestoId) {
+            // Actualizar existente
+            resultado = await actualizarPresupuesto(presupuestoId, datos);
+            if (resultado.success) {
+                showToast('Presupuesto actualizado correctamente', 'success');
+            }
+        } else {
+            // Crear nuevo
+            resultado = await guardarPresupuesto(datos);
+            if (resultado.success) {
+                document.getElementById('presupuestoId').value = resultado.id;
+                showToast('Presupuesto guardado correctamente', 'success');
+                activarModoEdicion();
+            }
+        }
+
+        if (!resultado.success) {
+            showToast('Error: ' + resultado.error, 'error');
+        }
+    } catch (error) {
+        showToast('Error al guardar: ' + error.message, 'error');
+    }
+}
+
+// ==================== HISTORIAL ====================
+
+async function abrirHistorial() {
+    const modal = document.getElementById('modalHistorial');
+    const lista = document.getElementById('listaPresupuestos');
+
+    modal.classList.add('active');
+    lista.innerHTML = '';
+    lista.classList.add('loading');
+
+    try {
+        const resultado = await obtenerPresupuestos({ estado: 'activo' });
+        presupuestosCargados = resultado.data || [];
+        renderizarListaPresupuestos(presupuestosCargados);
+    } catch (error) {
+        lista.innerHTML = '<div class="empty-state">Error al cargar presupuestos</div>';
+    }
+
+    lista.classList.remove('loading');
+}
+
+function cerrarHistorial() {
+    document.getElementById('modalHistorial').classList.remove('active');
+    document.getElementById('buscarCliente').value = '';
+}
+
+function renderizarListaPresupuestos(presupuestos) {
+    const lista = document.getElementById('listaPresupuestos');
+
+    if (!presupuestos || presupuestos.length === 0) {
+        lista.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <p>No hay presupuestos guardados</p>
+            </div>
+        `;
+        return;
+    }
+
+    lista.innerHTML = presupuestos.map(p => {
+        const fecha = p.presupuesto?.fecha ? formatearFecha(p.presupuesto.fecha) : 'Sin fecha';
+        const moneda = p.moneda || 'USD';
+        const valorTotal = p.valores?.total ? formatearMoneda(p.valores.total, moneda) : '-';
+
+        return `
+            <div class="presupuesto-item" data-id="${p.id}">
+                <div class="presupuesto-info">
+                    <div>
+                        <span class="presupuesto-numero">#${p.presupuesto?.numero || '00'}</span>
+                        <span class="presupuesto-cliente">${p.cliente?.nombre || 'Sin nombre'}</span>
+                    </div>
+                    <div class="presupuesto-fecha">${fecha}</div>
+                </div>
+                <div class="presupuesto-valor">${valorTotal}</div>
+                <div class="presupuesto-actions">
+                    <button class="btn-accion btn-editar" onclick="editarPresupuesto('${p.id}')">Editar</button>
+                    <button class="btn-accion btn-duplicar" onclick="duplicarPresupuestoUI('${p.id}')">Duplicar</button>
+                    <button class="btn-accion btn-eliminar" onclick="eliminarPresupuestoUI('${p.id}')">Eliminar</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filtrarHistorial() {
+    const busqueda = document.getElementById('buscarCliente').value.toLowerCase();
+
+    if (!busqueda) {
+        renderizarListaPresupuestos(presupuestosCargados);
+        return;
+    }
+
+    const filtrados = presupuestosCargados.filter(p =>
+        p.cliente?.nombre?.toLowerCase().includes(busqueda) ||
+        p.presupuesto?.numero?.includes(busqueda)
+    );
+
+    renderizarListaPresupuestos(filtrados);
+}
+
+// ==================== EDICIÓN ====================
+
+async function editarPresupuesto(id) {
+    try {
+        const resultado = await obtenerPresupuestoPorId(id);
+
+        if (!resultado.success) {
+            showToast('Error al cargar presupuesto', 'error');
+            return;
+        }
+
+        cargarPresupuestoEnFormulario(resultado.data);
+        cerrarHistorial();
+        showToast('Presupuesto cargado para edición', 'success');
+    } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+    }
+}
+
+function cargarPresupuestoEnFormulario(presupuesto) {
+    // Guardar ID para actualización
+    document.getElementById('presupuestoId').value = presupuesto.id;
+
+    // Datos del agente
+    document.getElementById('nombreAgente').value = presupuesto.agente?.nombre || '';
+    document.getElementById('telefonoAgente').value = presupuesto.agente?.telefono || '';
+
+    // Datos del cliente
+    document.getElementById('nombreCliente').value = presupuesto.cliente?.nombre || '';
+    document.getElementById('telefonoCliente').value = presupuesto.cliente?.telefono || '';
+    document.getElementById('ciudadCliente').value = presupuesto.cliente?.ciudad || '';
+    document.getElementById('cantidadPasajeros').value = presupuesto.cliente?.cantidadPasajeros || '';
+
+    // Datos del presupuesto
+    document.getElementById('numeroPresupuesto').value = presupuesto.presupuesto?.numero || '';
+    document.getElementById('fechaPresupuesto').value = presupuesto.presupuesto?.fecha || '';
+
+    // Tipo de viaje y vuelos
+    const tipoViaje = presupuesto.presupuesto?.tipoViaje || '';
+    document.getElementById('tipoViaje').value = tipoViaje;
+
+    // Limpiar vuelos existentes y recrear según tipo
+    limpiarVuelos();
+    if (tipoViaje) {
+        actualizarVuelosPorTipo();
+        // Cargar datos de vuelos
+        setTimeout(() => {
+            const vueloItems = document.querySelectorAll('.vuelo-item');
+            presupuesto.vuelos?.forEach((vuelo, index) => {
+                if (vueloItems[index]) {
+                    cargarDatosVuelo(vueloItems[index], vuelo);
+                }
+            });
+        }, 100);
+    }
+
+    // Hoteles
+    limpiarHoteles();
+    presupuesto.hoteles?.forEach(hotel => {
+        agregarHotel();
+        const hotelItems = document.querySelectorAll('.hotel-item');
+        const ultimoHotel = hotelItems[hotelItems.length - 1];
+        cargarDatosHotel(ultimoHotel, hotel);
+    });
+
+    // Opciones toggle
+    setToggleValue('incluyeTransfer', presupuesto.incluyeTransfer ? 'si' : 'no');
+    setToggleValue('incluyeSeguro', presupuesto.incluyeSeguro ? 'si' : 'no');
+    setToggleValue('incluyeVehiculo', presupuesto.incluyeVehiculo ? 'si' : 'no');
+    setToggleValue('moneda', presupuesto.moneda || 'USD');
+
+    // Valores
+    document.getElementById('valorPorPersona').value = presupuesto.valores?.porPersona || '';
+    document.getElementById('valorTotal').value = presupuesto.valores?.total || '';
+
+    // Activar modo edición visual
+    activarModoEdicion();
+}
+
+function cargarDatosVuelo(vueloItem, datos) {
+    vueloItem.querySelector('.vuelo-numero').value = datos.numero || '';
+    vueloItem.querySelector('.vuelo-fecha').value = datos.fecha || '';
+    vueloItem.querySelector('.vuelo-origen').value = datos.origen || '';
+    vueloItem.querySelector('.vuelo-destino').value = datos.destino || '';
+    vueloItem.querySelector('.vuelo-hora-salida').value = datos.horaSalida || '';
+    vueloItem.querySelector('.vuelo-hora-llegada').value = datos.horaLlegada || '';
+    vueloItem.querySelector('.vuelo-aerolinea').value = datos.aerolinea || '';
+    vueloItem.querySelector('.vuelo-duracion').value = datos.duracion || '';
+    vueloItem.querySelector('.vuelo-escalas').value = datos.escalas || '';
+
+    // Mostrar info si hay datos
+    if (datos.origen && datos.destino) {
+        const info = vueloItem.querySelector('.vuelo-info');
+        info.style.display = 'block';
+        info.querySelector('.vuelo-ruta').textContent = `${datos.origen} → ${datos.destino}`;
+        info.querySelector('.vuelo-horario').textContent = `${datos.horaSalida || ''} - ${datos.horaLlegada || ''}`;
+        info.querySelector('.vuelo-airline').textContent = datos.aerolinea || '';
+    }
+}
+
+function cargarDatosHotel(hotelItem, datos) {
+    hotelItem.querySelector('.hotel-nombre').value = datos.nombre || '';
+    hotelItem.querySelector('.hotel-url').value = datos.url || '';
+    hotelItem.querySelector('.hotel-tipo-cuarto').value = datos.tipoCuarto || '';
+    hotelItem.querySelector('.hotel-fecha-entrada').value = datos.fechaEntrada || '';
+    hotelItem.querySelector('.hotel-fecha-salida').value = datos.fechaSalida || '';
+    hotelItem.querySelector('.hotel-noches').value = datos.noches || '';
+    hotelItem.querySelector('.hotel-regimen').value = datos.regimen || '';
+}
+
+function limpiarHoteles() {
+    document.getElementById('hospedajeContainer').innerHTML = '';
+    hotelCount = 0;
+}
+
+function setToggleValue(inputId, valor) {
+    const hiddenInput = document.getElementById(inputId);
+    if (!hiddenInput) return;
+
+    hiddenInput.value = valor;
+
+    // Actualizar botones visuales
+    const container = hiddenInput.closest('.toggle-siNo');
+    if (container) {
+        const buttons = container.querySelectorAll('.toggle-btn');
+        buttons.forEach(btn => {
+            const btnValor = btn.textContent.toLowerCase() === 'sí' ? 'si' :
+                           btn.textContent.toLowerCase() === 'no' ? 'no' :
+                           btn.textContent;
+            btn.classList.toggle('active', btnValor === valor);
+        });
+    }
+}
+
+function activarModoEdicion() {
+    document.body.classList.add('editing-mode');
+}
+
+function desactivarModoEdicion() {
+    document.body.classList.remove('editing-mode');
+    document.getElementById('presupuestoId').value = '';
+}
+
+// Nuevo presupuesto (limpiar formulario)
+function nuevoPresupuesto() {
+    if (confirm('¿Deseas crear un nuevo presupuesto? Se perderán los cambios no guardados.')) {
+        desactivarModoEdicion();
+        document.getElementById('budgetForm').reset();
+        initForm();
+    }
+}
+
+// ==================== DUPLICAR / ELIMINAR ====================
+
+async function duplicarPresupuestoUI(id) {
+    if (!confirm('¿Deseas duplicar este presupuesto?')) return;
+
+    try {
+        const resultado = await duplicarPresupuesto(id);
+        if (resultado.success) {
+            showToast('Presupuesto duplicado correctamente', 'success');
+            // Recargar lista
+            abrirHistorial();
+        } else {
+            showToast('Error al duplicar: ' + resultado.error, 'error');
+        }
+    } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+    }
+}
+
+async function eliminarPresupuestoUI(id) {
+    if (!confirm('¿Estás seguro de eliminar este presupuesto?')) return;
+
+    try {
+        const resultado = await eliminarPresupuesto(id);
+        if (resultado.success) {
+            showToast('Presupuesto eliminado', 'success');
+            // Recargar lista
+            abrirHistorial();
+        } else {
+            showToast('Error al eliminar: ' + resultado.error, 'error');
+        }
+    } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+    }
 }
