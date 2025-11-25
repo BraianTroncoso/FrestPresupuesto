@@ -391,6 +391,7 @@ app.get('/api/test-pdf-4', async (req, res) => {
         }
 
         const datos = {
+            "idioma": "pt",
             "agente": {
                 "nombre": "Franco",
                 "email": "contatofreest@gmail.com",
@@ -407,7 +408,7 @@ app.get('/api/test-pdf-4', async (req, res) => {
             "presupuesto": {
                 "numero": "25",
                 "fecha": "2025-11-24",
-                "tipoViaje": "ida",
+                "tipoViaje": "idaVuelta",
                 "tipoTarifa": "light"
             },
             "vuelos": [
@@ -415,7 +416,7 @@ app.get('/api/test-pdf-4', async (req, res) => {
                     "tipo": "ida",
                     "numero": "LA8049",
                     "origen": "COR",
-                    "destino": "GRU",
+                    "destino": "BUZ",
                     "fecha": "2025-12-03",
                     "horaSalida": "11:00",
                     "horaLlegada": "14:35",
@@ -424,16 +425,16 @@ app.get('/api/test-pdf-4', async (req, res) => {
                     "escalas": "Directo"
                 },
                 {
-                    "tipo": "ida",
-                    "numero": "LA3324",
-                    "origen": "GRU",
-                    "destino": "BUZ",
-                    "fecha": "2025-12-03",
+                    "tipo": "vuelta",
+                    "numero": "LA3325",
+                    "origen": "BUZ",
+                    "destino": "COR",
+                    "fecha": "2025-12-10",
                     "horaSalida": "16:00",
-                    "horaLlegada": "17:10",
+                    "horaLlegada": "21:30",
                     "aerolinea": "LATAM",
-                    "duracion": "1h 10m",
-                    "escalas": "Directo"
+                    "duracion": "5h 30m",
+                    "escalas": "1 escala GRU"
                 }
             ],
             "hoteles": [
@@ -442,9 +443,19 @@ app.get('/api/test-pdf-4', async (req, res) => {
                     "url": "https://www.booking.com/hotel/br/buzios-beach.html",
                     "tipoCuarto": "doble",
                     "fechaEntrada": "2025-12-03",
-                    "fechaSalida": "2025-12-10",
-                    "noches": "7",
+                    "fechaSalida": "2025-12-07",
+                    "noches": "4",
                     "regimen": "mediaPension",
+                    "imagen": imagenBase64
+                },
+                {
+                    "nombre": "Pousada do Sol",
+                    "url": "https://www.booking.com/hotel/br/pousada-sol.html",
+                    "tipoCuarto": "suite",
+                    "fechaEntrada": "2025-12-07",
+                    "fechaSalida": "2025-12-10",
+                    "noches": "3",
+                    "regimen": "desayuno",
                     "imagen": imagenBase64
                 }
             ],

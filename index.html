@@ -10,20 +10,24 @@
     <div class="container">
         <header>
             <img src="https://freest.com.br/wp-content/uploads/2022/06/logo-site-1-1-1024x188.png" alt="Freest Travel" class="logo">
-            <h1><span class="text-primary">Presupuesto</span> <span class="text-secondary">de Viaje</span></h1>
+            <h1><span class="text-primary" data-i18n="presupuesto">Presupuesto</span> <span class="text-secondary" data-i18n="deViaje">de Viaje</span></h1>
+            <div class="idioma-switch">
+                <button type="button" class="bandera active" data-idioma="es" title="Español" onclick="cambiarIdioma('es')">🇦🇷</button>
+                <button type="button" class="bandera" data-idioma="pt" title="Português" onclick="cambiarIdioma('pt')">🇧🇷</button>
+            </div>
         </header>
 
         <form id="budgetForm">
             <!-- Sección Agente -->
             <section class="form-section">
-                <h2>Datos del Agente</h2>
+                <h2 data-i18n="datosAgente">Datos del Agente</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="nombreAgente">Nombre del Agente</label>
+                        <label for="nombreAgente" data-i18n="nombreAgente">Nombre del Agente</label>
                         <input type="text" id="nombreAgente" name="nombreAgente" required>
                     </div>
                     <div class="form-group">
-                        <label for="emailAgente">Email del Agente</label>
+                        <label for="emailAgente" data-i18n="emailAgente">Email del Agente</label>
                         <input type="email" id="emailAgente" name="emailAgente" readonly>
                     </div>
                     <div class="form-group">
@@ -31,7 +35,7 @@
                         <input type="text" id="cadastur" name="cadastur" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="telefonoAgente">Teléfono Agente</label>
+                        <label for="telefonoAgente" data-i18n="telefonoAgente">Teléfono Agente</label>
                         <input type="tel" id="telefonoAgente" name="telefonoAgente" placeholder="(229) 989-8449">
                     </div>
                 </div>
@@ -39,26 +43,26 @@
 
             <!-- Sección Cliente -->
             <section class="form-section">
-                <h2>Datos del Cliente</h2>
+                <h2 data-i18n="datosCliente">Datos del Cliente</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="nombreCliente">Nombre del Cliente</label>
+                        <label for="nombreCliente" data-i18n="nombreCliente">Nombre del Cliente</label>
                         <input type="text" id="nombreCliente" name="nombreCliente" required>
                     </div>
                     <div class="form-group">
-                        <label for="telefonoCliente">Teléfono Cliente</label>
+                        <label for="telefonoCliente" data-i18n="telefonoCliente">Teléfono Cliente</label>
                         <input type="tel" id="telefonoCliente" name="telefonoCliente" placeholder="(229) 989-8449">
                     </div>
                     <div class="form-group">
-                        <label for="ciudadCliente">Ciudad del Cliente</label>
+                        <label for="ciudadCliente" data-i18n="ciudadCliente">Ciudad del Cliente</label>
                         <input type="text" id="ciudadCliente" name="ciudadCliente">
                     </div>
                     <div class="form-group">
-                        <label for="destinoFinal">Destino Final</label>
+                        <label for="destinoFinal" data-i18n="destinoFinal">Destino Final</label>
                         <input type="text" id="destinoFinal" name="destinoFinal" placeholder="Ej: Mar del Plata">
                     </div>
                     <div class="form-group">
-                        <label for="cantidadPasajeros">Cantidad de Pasajeros</label>
+                        <label for="cantidadPasajeros" data-i18n="cantidadPasajeros">Cantidad de Pasajeros</label>
                         <input type="number" id="cantidadPasajeros" name="cantidadPasajeros" min="1" placeholder="Ej: 2">
                     </div>
                 </div>
@@ -66,29 +70,29 @@
 
             <!-- Sección Presupuesto -->
             <section class="form-section">
-                <h2>Datos del Presupuesto</h2>
+                <h2 data-i18n="datosPresupuesto">Datos del Presupuesto</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="numeroPresupuesto">Número de Presupuesto</label>
+                        <label for="numeroPresupuesto" data-i18n="numeroPresupuesto">Número de Presupuesto</label>
                         <input type="text" id="numeroPresupuesto" name="numeroPresupuesto" readonly onclick="habilitarEdicionPresupuesto(this)">
                     </div>
                     <div class="form-group">
-                        <label for="fechaPresupuesto">Fecha de Presupuesto</label>
+                        <label for="fechaPresupuesto" data-i18n="fechaPresupuesto">Fecha de Presupuesto</label>
                         <input type="date" id="fechaPresupuesto" name="fechaPresupuesto">
                     </div>
                     <div class="form-group">
-                        <label for="tipoViaje">Tipo de Viaje</label>
+                        <label for="tipoViaje" data-i18n="tipoViaje">Tipo de Viaje</label>
                         <select id="tipoViaje" name="tipoViaje" onchange="actualizarVuelosPorTipo()">
-                            <option value="">Seleccionar...</option>
-                            <option value="ida">Solo Ida</option>
-                            <option value="idaVuelta">Ida y Vuelta</option>
-                            <option value="multiDestino">Multi-destino</option>
+                            <option value="" data-i18n="seleccionar">Seleccionar...</option>
+                            <option value="ida" data-i18n="soloIda">Solo Ida</option>
+                            <option value="idaVuelta" data-i18n="idaVuelta">Ida y Vuelta</option>
+                            <option value="multiDestino" data-i18n="multiDestino">Multi-destino</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="tipoTarifa">Tipo de Tarifa</label>
+                        <label for="tipoTarifa" data-i18n="tipoTarifa">Tipo de Tarifa</label>
                         <select id="tipoTarifa" name="tipoTarifa">
-                            <option value="">Seleccionar...</option>
+                            <option value="" data-i18n="seleccionar">Seleccionar...</option>
                             <option value="basic">Basic - Solo mochila</option>
                             <option value="light">Light - Mochila + Carry on</option>
                             <option value="full">Full - Mochila + Carry on + Valija 23kg</option>
@@ -101,43 +105,43 @@
             <section class="form-section" id="seccionVuelos" style="display:none;">
                 <!-- Sub-sección Vuelos de Ida -->
                 <div id="seccionVuelosIda" class="vuelos-subseccion" style="display:none;">
-                    <h2>Vuelos de Ida</h2>
+                    <h2 data-i18n="vuelosIda">Vuelos de Ida</h2>
                     <div id="vuelosIdaContainer"></div>
-                    <button type="button" class="btn-add" onclick="agregarVuelo('ida')">+ Agregar Ida</button>
+                    <button type="button" class="btn-add" onclick="agregarVuelo('ida')" data-i18n="agregarIda">+ Agregar Ida</button>
                 </div>
 
                 <!-- Sub-sección Vuelos de Vuelta -->
                 <div id="seccionVuelosVuelta" class="vuelos-subseccion" style="display:none;">
-                    <h2>Vuelos de Vuelta</h2>
+                    <h2 data-i18n="vuelosVuelta">Vuelos de Vuelta</h2>
                     <div id="vuelosVueltaContainer"></div>
-                    <button type="button" class="btn-add" onclick="agregarVuelo('vuelta')">+ Agregar Vuelta</button>
+                    <button type="button" class="btn-add" onclick="agregarVuelo('vuelta')" data-i18n="agregarVuelta">+ Agregar Vuelta</button>
                 </div>
 
                 <!-- Sub-sección Multi-destino -->
                 <div id="seccionVuelosMulti" class="vuelos-subseccion" style="display:none;">
-                    <h2>Vuelos</h2>
+                    <h2 data-i18n="vuelos">Vuelos</h2>
                     <div id="vuelosMultiContainer"></div>
-                    <button type="button" class="btn-add" onclick="agregarVuelo('multi')">+ Agregar Vuelo</button>
+                    <button type="button" class="btn-add" onclick="agregarVuelo('multi')" data-i18n="agregarVuelo">+ Agregar Vuelo</button>
                 </div>
             </section>
 
             <!-- Sección Hospedaje -->
             <section class="form-section">
-                <h2>Hospedaje</h2>
+                <h2 data-i18n="hospedaje">Hospedaje</h2>
                 <div id="hospedajeContainer">
                     <!-- Hoteles dinámicos se agregan aquí -->
                 </div>
-                <button type="button" class="btn-add" onclick="agregarHotel()">+ Agregar Hotel</button>
+                <button type="button" class="btn-add" onclick="agregarHotel()" data-i18n="agregarHotel">+ Agregar Hotel</button>
             </section>
 
             <!-- Sección Transfer (solo Si/No) -->
             <section class="form-section">
                 <h2>Transfer</h2>
                 <div class="toggle-siNo">
-                    <label>¿Incluye Transfer?</label>
+                    <label data-i18n="incluyeTransfer">¿Incluye Transfer?</label>
                     <div class="toggle-buttons">
-                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeTransfer', 'no')">No</button>
-                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeTransfer', 'si')">Sí</button>
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeTransfer', 'no')" data-i18n="no">No</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeTransfer', 'si')" data-i18n="si">Sí</button>
                     </div>
                     <input type="hidden" id="incluyeTransfer" value="no">
                 </div>
@@ -145,12 +149,12 @@
 
             <!-- Sección Seguro (solo Si/No) -->
             <section class="form-section">
-                <h2>Seguro de Viaje</h2>
+                <h2 data-i18n="seguroViaje">Seguro de Viaje</h2>
                 <div class="toggle-siNo">
-                    <label>¿Incluye Seguro?</label>
+                    <label data-i18n="incluyeSeguro">¿Incluye Seguro?</label>
                     <div class="toggle-buttons">
-                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeSeguro', 'no')">No</button>
-                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeSeguro', 'si')">Sí</button>
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeSeguro', 'no')" data-i18n="no">No</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeSeguro', 'si')" data-i18n="si">Sí</button>
                     </div>
                     <input type="hidden" id="incluyeSeguro" value="no">
                 </div>
@@ -158,12 +162,12 @@
 
             <!-- Sección Alquiler Vehículo (solo Si/No) -->
             <section class="form-section">
-                <h2>Alquiler de Vehículo</h2>
+                <h2 data-i18n="alquilerVehiculo">Alquiler de Vehículo</h2>
                 <div class="toggle-siNo">
-                    <label>¿Incluye Alquiler de Vehículo?</label>
+                    <label data-i18n="incluyeVehiculo">¿Incluye Alquiler de Vehículo?</label>
                     <div class="toggle-buttons">
-                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeVehiculo', 'no')">No</button>
-                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeVehiculo', 'si')">Sí</button>
+                        <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'incluyeVehiculo', 'no')" data-i18n="no">No</button>
+                        <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'incluyeVehiculo', 'si')" data-i18n="si">Sí</button>
                     </div>
                     <input type="hidden" id="incluyeVehiculo" value="no">
                 </div>
@@ -171,9 +175,9 @@
 
             <!-- Sección Totales -->
             <section class="form-section totales">
-                <h2>Valores</h2>
+                <h2 data-i18n="valores">Valores</h2>
                 <div class="toggle-siNo" style="margin-bottom: 15px;">
-                    <label>Moneda</label>
+                    <label data-i18n="moneda">Moneda</label>
                     <div class="toggle-buttons">
                         <button type="button" class="toggle-btn active" onclick="toggleOpcion(this, 'moneda', 'USD')">USD</button>
                         <button type="button" class="toggle-btn" onclick="toggleOpcion(this, 'moneda', 'BRL')">BRL</button>
@@ -182,11 +186,11 @@
                 </div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="valorPorPersona">Valor por Persona</label>
+                        <label for="valorPorPersona" data-i18n="valorPorPersona">Valor por Persona</label>
                         <input type="number" id="valorPorPersona" name="valorPorPersona" step="0.01" placeholder="Ej: 1500.00" oninput="calcularValorTotal()">
                     </div>
                     <div class="form-group">
-                        <label for="valorTotal">Valor Total <small>(editable)</small></label>
+                        <label for="valorTotal" data-i18n="valorTotal">Valor Total</label>
                         <input type="number" id="valorTotal" name="valorTotal" step="0.01" placeholder="Auto-calculado">
                     </div>
                 </div>
@@ -194,10 +198,10 @@
 
             <!-- Botones de acción -->
             <div class="form-actions">
-                <button type="button" class="btn-export btn-guardar" onclick="guardarPresupuestoActual()">Guardar</button>
-                <button type="button" class="btn-export btn-historial" onclick="abrirHistorial()">Historial</button>
-                <button type="button" class="btn-export btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
-                <button type="button" class="btn-export btn-excel" onclick="exportarExcel()">Exportar Excel</button>
+                <button type="button" class="btn-export btn-guardar" onclick="guardarPresupuestoActual()" data-i18n="guardar">Guardar</button>
+                <button type="button" class="btn-export btn-historial" onclick="abrirHistorial()" data-i18n="historial">Historial</button>
+                <button type="button" class="btn-export btn-pdf" onclick="exportarPDF()" data-i18n="exportarPDF">Exportar PDF</button>
+                <button type="button" class="btn-export btn-excel" onclick="exportarExcel()" data-i18n="exportarExcel">Exportar Excel</button>
             </div>
             <input type="hidden" id="presupuestoId" value="">
         </form>

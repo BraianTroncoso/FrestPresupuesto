@@ -43,6 +43,7 @@ header {
     background: #1e293b;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    position: relative;
 }
 
 header .logo {
@@ -54,6 +55,37 @@ header .logo {
 header h1 {
     font-size: 1.6rem;
     font-weight: 700;
+}
+
+/* Switch de idioma */
+.idioma-switch {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 5px;
+}
+
+.idioma-switch .bandera {
+    padding: 6px 10px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s;
+    font-size: 22px;
+    background: rgba(255,255,255,0.1);
+}
+
+.idioma-switch .bandera:hover {
+    opacity: 0.8;
+    background: rgba(255,255,255,0.2);
+}
+
+.idioma-switch .bandera.active {
+    border-color: var(--primary-color);
+    opacity: 1;
+    background: rgba(255,255,255,0.15);
 }
 
 .text-primary {

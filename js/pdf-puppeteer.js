@@ -87,15 +87,117 @@ function generarHTML(datos) {
         return mapeo[regimen] || capitalizar(regimen);
     };
 
-    // Formatear tipo de tarifa
-    const formatearTarifa = (tarifa) => {
+    // Formatear tipo de tarifa (con traducciones)
+    const formatearTarifa = (tarifa, idioma = 'es') => {
         if (!tarifa) return null;
         const mapeo = {
-            'basic': { nombre: 'BASIC', descripcion: 'Solo mochila', icono: '🎒' },
-            'light': { nombre: 'LIGHT', descripcion: 'Mochila + Carry on', icono: '🎒👜' },
-            'full': { nombre: 'FULL', descripcion: 'Mochila + Carry on + Valija 23kg', icono: '🎒👜🧳' }
+            es: {
+                'basic': { nombre: 'BASIC', descripcion: 'Solo mochila' },
+                'light': { nombre: 'LIGHT', descripcion: 'Mochila + Carry on' },
+                'full': { nombre: 'FULL', descripcion: 'Mochila + Carry on + Valija 23kg' }
+            },
+            pt: {
+                'basic': { nombre: 'BASIC', descripcion: 'Só mochila' },
+                'light': { nombre: 'LIGHT', descripcion: 'Mochila + Bagagem de mão' },
+                'full': { nombre: 'FULL', descripcion: 'Mochila + Bagagem de mão + Mala 23kg' }
+            }
         };
-        return mapeo[tarifa] || null;
+        return mapeo[idioma]?.[tarifa] || mapeo['es'][tarifa] || null;
+    };
+
+    // Traducciones del PDF
+    const TRADUCCIONES_PDF = {
+        es: {
+            datosCliente: 'Datos del cliente',
+            nombre: 'Nombre',
+            ciudad: 'Ciudad',
+            fecha: 'Fecha',
+            telefono: 'Teléfono',
+            trechosAereos: 'Trechos aéreos',
+            hospedaje: 'Hospedaje',
+            hotel: 'Hotel',
+            cuarto: 'Cuarto',
+            entrada: 'Entrada',
+            salida: 'Salida',
+            regimen: 'Regimen',
+            masInfo: 'Más información',
+            cotizacion: 'Cotización',
+            cotizacionTexto: 'Precio referido a dólar billete, caso el pago sea realizado en pesos argentinos, deberá ser considerado el valor referente al tipo de cambio del día.',
+            plazo: 'Plazo de la propuesta',
+            plazoTexto: 'Las tarifas seleccionadas están sujetas a disponibilidad y pueden cambiar sin previo aviso. Solo la emisión del voucher garantiza la tarifa.',
+            valorPorPersona: 'VALOR POR PERSONA',
+            valorTotal: 'VALOR TOTAL',
+            adulto: 'adulto',
+            adultos: 'adultos',
+            transfer: 'Transfer',
+            seguroViaje: 'Seguro de Viaje',
+            alquilerVehiculo: 'Alquiler de Vehículo',
+            directo: 'Directo',
+            // Header agente
+            agente: 'Agente',
+            email: 'Email',
+            al: 'al',
+            // Regimen
+            mediaPension: 'Media Pensión',
+            pensionCompleta: 'Pensión Completa',
+            todoIncluido: 'Todo Incluido',
+            soloAlojamiento: 'Solo Alojamiento',
+            desayuno: 'Desayuno'
+        },
+        pt: {
+            datosCliente: 'Dados do cliente',
+            nombre: 'Nome',
+            ciudad: 'Cidade',
+            fecha: 'Data',
+            telefono: 'Telefone',
+            trechosAereos: 'Trechos aéreos',
+            hospedaje: 'Hospedagem',
+            hotel: 'Hotel',
+            cuarto: 'Quarto',
+            entrada: 'Entrada',
+            salida: 'Saída',
+            regimen: 'Regime',
+            masInfo: 'Mais informações',
+            cotizacion: 'Cotação',
+            cotizacionTexto: 'Preço referido ao dólar, caso o pagamento seja realizado em reais, deverá ser considerado o valor referente à taxa de câmbio do dia.',
+            plazo: 'Prazo da proposta',
+            plazoTexto: 'As tarifas selecionadas estão sujeitas à disponibilidade e podem mudar sem aviso prévio. Somente a emissão do voucher garante a tarifa.',
+            valorPorPersona: 'VALOR POR PESSOA',
+            valorTotal: 'VALOR TOTAL',
+            adulto: 'adulto',
+            adultos: 'adultos',
+            transfer: 'Transfer',
+            seguroViaje: 'Seguro Viagem',
+            alquilerVehiculo: 'Aluguel de Veículo',
+            directo: 'Direto',
+            // Header agente
+            agente: 'Agente',
+            email: 'E-mail',
+            al: 'a',
+            // Regimen
+            mediaPension: 'Meia Pensão',
+            pensionCompleta: 'Pensão Completa',
+            todoIncluido: 'Tudo Incluído',
+            soloAlojamiento: 'Só Hospedagem',
+            desayuno: 'Café da Manhã'
+        }
+    };
+
+    // Obtener idioma y traducciones
+    const idioma = datos.idioma || 'es';
+    const t = TRADUCCIONES_PDF[idioma] || TRADUCCIONES_PDF['es'];
+
+    // Formatear régimen con traducciones
+    const formatearRegimenTraducido = (regimen) => {
+        if (!regimen) return '';
+        const mapeo = {
+            'mediaPension': t.mediaPension,
+            'pensionCompleta': t.pensionCompleta,
+            'todoIncluido': t.todoIncluido,
+            'soloAlojamiento': t.soloAlojamiento,
+            'desayuno': t.desayuno
+        };
+        return mapeo[regimen] || capitalizar(regimen);
     };
 
     // Datos
@@ -110,9 +212,9 @@ function generarHTML(datos) {
 
     // Servicios incluidos
     const servicios = [];
-    if (datos.incluyeTransfer) servicios.push('Transfer');
-    if (datos.incluyeSeguro) servicios.push('Seguro de Viaje');
-    if (datos.incluyeVehiculo) servicios.push('Alquiler de Vehículo');
+    if (datos.incluyeTransfer) servicios.push(t.transfer);
+    if (datos.incluyeSeguro) servicios.push(t.seguroViaje);
+    if (datos.incluyeVehiculo) servicios.push(t.alquilerVehiculo);
     const serviciosTexto = servicios.length > 0 ? ': ' + servicios.join(' + ') : '';
 
     // Ruta del viaje
@@ -126,7 +228,7 @@ function generarHTML(datos) {
     const fechaIniVuelo = fechasVuelo[0] ? formatearFecha(fechasVuelo[0]) : '';
     const fechaFinVuelo = fechasVuelo[fechasVuelo.length - 1] ? formatearFecha(fechasVuelo[fechasVuelo.length - 1]) : fechaIniVuelo;
     // Si es solo ida (misma fecha), mostrar solo una
-    const fechasVueloTexto = fechaIniVuelo === fechaFinVuelo ? fechaIniVuelo : `${fechaIniVuelo} al ${fechaFinVuelo}`;
+    const fechasVueloTexto = fechaIniVuelo === fechaFinVuelo ? fechaIniVuelo : `${fechaIniVuelo} ${t.al} ${fechaFinVuelo}`;
 
     // Generar HTML de vuelos
     let vuelosHTML = '';
@@ -163,7 +265,7 @@ function generarHTML(datos) {
                         <div class="linea"></div>
                         <span class="avion ${esIda ? 'ida' : 'vuelta'}">✈</span>
                     </div>
-                    <div class="escalas">${vuelo.escalas || 'Directo'}</div>
+                    <div class="escalas">${(!vuelo.escalas || vuelo.escalas.toLowerCase() === 'directo') ? t.directo : ''}</div>
                 </div>
                 <div class="vuelo-tiempo">
                     <div class="hora">${derHora || '--:--'}${derMas1}</div>
@@ -189,11 +291,11 @@ function generarHTML(datos) {
             <div class="hotel">
                 <div class="hotel-imagen">${imagenHTML}</div>
                 <div class="hotel-datos">
-                    <p><strong>Hotel:</strong> ${hotelNombreHTML}</p>
-                    <p><strong>Cuarto:</strong> ${capitalizar(hotel.tipoCuarto) || ''}</p>
-                    <p><strong>Entrada:</strong> ${formatearFecha(hotel.fechaEntrada)}</p>
-                    <p><strong>Salida:</strong> ${formatearFecha(hotel.fechaSalida)}</p>
-                    <p><strong>Regimen:</strong> ${formatearRegimen(hotel.regimen)}</p>
+                    <p><strong>${t.hotel}:</strong> ${hotelNombreHTML}</p>
+                    <p><strong>${t.cuarto}:</strong> ${capitalizar(hotel.tipoCuarto) || ''}</p>
+                    <p><strong>${t.entrada}:</strong> ${formatearFecha(hotel.fechaEntrada)}</p>
+                    <p><strong>${t.salida}:</strong> ${formatearFecha(hotel.fechaSalida)}</p>
+                    <p><strong>${t.regimen}:</strong> ${formatearRegimenTraducido(hotel.regimen)}</p>
                 </div>
             </div>`;
         }
@@ -504,16 +606,31 @@ function generarHTML(datos) {
             font-size: 10px;
         }
 
+        /* HOTELES CONTAINER */
+        .hoteles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3mm;
+            padding: 3mm 10mm;
+        }
+
         /* HOTEL */
         .hotel {
             display: flex;
-            gap: 5mm;
-            padding: 4mm 10mm;
+            gap: 3mm;
+            flex: 1 1 calc(50% - 3mm);
+            min-width: 85mm;
+            max-width: 100%;
+        }
+
+        .hoteles-container .hotel:only-child {
+            flex: 1 1 100%;
+            max-width: 100%;
         }
 
         .hotel-imagen {
-            width: 55mm;
-            height: 35mm;
+            width: 40mm;
+            height: 28mm;
             background: #f4f4f4;
             border: 1px solid #e2e8f0;
             border-radius: 2mm;
@@ -521,8 +638,9 @@ function generarHTML(datos) {
             align-items: center;
             justify-content: center;
             color: #64748b;
-            font-size: 9px;
+            font-size: 8px;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .hotel-imagen img {
@@ -532,12 +650,13 @@ function generarHTML(datos) {
         }
 
         .hotel-datos {
-            font-size: 10px;
+            font-size: 9px;
             color: #1e293b;
+            flex: 1;
         }
 
         .hotel-datos p {
-            margin: 2mm 0;
+            margin: 1mm 0;
         }
 
         .hotel-datos strong {
@@ -612,9 +731,9 @@ function generarHTML(datos) {
             </div>
             <div class="datos-agente">
                 <p><strong>Cadastur:</strong> ${agente.cadastur || ''}</p>
-                <p><strong>Agente:</strong> ${agente.nombre || ''}</p>
-                <p><strong>Teléfono:</strong> ${agente.telefono || ''}</p>
-                <p><strong>Email:</strong> ${agente.email || ''}</p>
+                <p><strong>${t.agente}:</strong> ${agente.nombre || ''}</p>
+                <p><strong>${t.telefono}:</strong> ${agente.telefono || ''}</p>
+                <p><strong>${t.email}:</strong> ${agente.email || ''}</p>
             </div>
         </div>
 
@@ -622,7 +741,7 @@ function generarHTML(datos) {
         <div class="barra-destino">
             <div class="destino-info">
                 <h2>${ciudadOrigen} - ${ciudadDestino}</h2>
-                <p>${cliente.cantidadPasajeros || 1} adulto${(cliente.cantidadPasajeros || 1) > 1 ? 's' : ''}${serviciosTexto}</p>
+                <p>${cliente.cantidadPasajeros || 1} ${(cliente.cantidadPasajeros || 1) > 1 ? t.adultos : t.adulto}${serviciosTexto}</p>
             </div>
             <div class="numero-presupuesto">
                 N° ${(presupuesto.numero || '00').toString().padStart(4, '0')}
@@ -633,13 +752,13 @@ function generarHTML(datos) {
         <div class="seccion">
             <div class="seccion-header">
                 <img src="${usuarioPath}" alt="Usuario">
-                <h3>Datos del cliente</h3>
+                <h3>${t.datosCliente}</h3>
             </div>
             <div class="datos-grid">
-                <p><strong>Nombre:</strong> ${cliente.nombre || ''}</p>
-                <p><strong>Ciudad:</strong> ${cliente.ciudad || ''}</p>
-                <p><strong>Fecha:</strong> ${formatearFecha(presupuesto.fecha)}</p>
-                <p><strong>Teléfono:</strong> ${cliente.telefono || ''}</p>
+                <p><strong>${t.nombre}:</strong> ${cliente.nombre || ''}</p>
+                <p><strong>${t.ciudad}:</strong> ${cliente.ciudad || ''}</p>
+                <p><strong>${t.fecha}:</strong> ${formatearFecha(presupuesto.fecha)}</p>
+                <p><strong>${t.telefono}:</strong> ${cliente.telefono || ''}</p>
             </div>
         </div>
 
@@ -647,12 +766,12 @@ function generarHTML(datos) {
 
         <!-- VUELOS -->
         ${vuelos.length > 0 && vuelos.some(v => v.numero || v.origen) ? `
-        <div class="barra-titulo">Trechos aéreos${fechaIniVuelo ? ` - ${fechasVueloTexto}` : ''}</div>
+        <div class="barra-titulo">${t.trechosAereos}${fechaIniVuelo ? ` - ${fechasVueloTexto}` : ''}</div>
         <div class="vuelos-container">
-            ${presupuesto.tipoTarifa && formatearTarifa(presupuesto.tipoTarifa) ? `
+            ${presupuesto.tipoTarifa && formatearTarifa(presupuesto.tipoTarifa, idioma) ? `
             <div class="tarifa-info">
-                <span class="tarifa-badge">${formatearTarifa(presupuesto.tipoTarifa).nombre}</span>
-                <span class="tarifa-descripcion">- ${formatearTarifa(presupuesto.tipoTarifa).descripcion}</span>
+                <span class="tarifa-badge">${formatearTarifa(presupuesto.tipoTarifa, idioma).nombre}</span>
+                <span class="tarifa-descripcion">- ${formatearTarifa(presupuesto.tipoTarifa, idioma).descripcion}</span>
             </div>
             ` : ''}
             ${vuelosHTML}
@@ -661,33 +780,35 @@ function generarHTML(datos) {
 
         <!-- HOSPEDAJE -->
         ${hoteles.length > 0 && hoteles.some(h => h.nombre) ? `
-        <div class="barra-titulo">Hospedaje</div>
-        ${hotelesHTML}
+        <div class="barra-titulo">${t.hospedaje}</div>
+        <div class="hoteles-container">
+            ${hotelesHTML}
+        </div>
         ` : ''}
 
         <!-- MAS INFORMACION -->
-        <div class="barra-titulo">Más información</div>
+        <div class="barra-titulo">${t.masInfo}</div>
 
         <div class="info-container">
             <div class="info-item">
                 <img class="info-icon" src="${cotizacionPath}" alt="Cotización">
                 <div class="info-texto">
-                    <strong>Cotización:</strong> Precio referido a dólar billete, caso el pago sea realizado en pesos argentinos, deberá ser considerado el valor referente al tipo de cambio del día.
+                    <strong>${t.cotizacion}:</strong> ${t.cotizacionTexto}
                 </div>
             </div>
 
             <div class="info-item">
                 <img class="info-icon" src="${plazoPath}" alt="Plazo">
                 <div class="info-texto">
-                    <strong>Plazo de la propuesta:</strong> Las tarifas seleccionadas están sujetas a disponibilidad y pueden cambiar sin previo aviso. Solo la emisión del voucher garantiza la tarifa.
+                    <strong>${t.plazo}:</strong> ${t.plazoTexto}
                 </div>
             </div>
         </div>
 
         <!-- VALORES -->
         <div class="valores-box">
-            <p class="por-persona">VALOR POR PERSONA: ${monedaSym} ${formatearNumero(valores.porPersona)}</p>
-            <p class="total">VALOR TOTAL: ${monedaSym} ${formatearNumero(valores.total)}</p>
+            <p class="por-persona">${t.valorPorPersona}: ${monedaSym} ${formatearNumero(valores.porPersona)}</p>
+            <p class="total">${t.valorTotal}: ${monedaSym} ${formatearNumero(valores.total)}</p>
         </div>
 
         <!-- BARRA AZUL BOTTOM -->

@@ -1,10 +1,153 @@
 // Variable para almacenar presupuestos cargados
 let presupuestosCargados = [];
 
+// ==================== SISTEMA DE IDIOMAS ====================
+let idiomaActual = localStorage.getItem('idioma') || 'es';
+
+const TRADUCCIONES = {
+    es: {
+        // Header
+        presupuesto: 'Presupuesto',
+        deViaje: 'de Viaje',
+        // Secciones
+        datosAgente: 'Datos del Agente',
+        datosCliente: 'Datos del Cliente',
+        datosPresupuesto: 'Datos del Presupuesto',
+        // Labels Agente
+        nombreAgente: 'Nombre del Agente',
+        emailAgente: 'Email del Agente',
+        telefonoAgente: 'Teléfono Agente',
+        // Labels Cliente
+        nombreCliente: 'Nombre del Cliente',
+        telefonoCliente: 'Teléfono Cliente',
+        ciudadCliente: 'Ciudad del Cliente',
+        destinoFinal: 'Destino Final',
+        cantidadPasajeros: 'Cantidad de Pasajeros',
+        // Labels Presupuesto
+        numeroPresupuesto: 'Número de Presupuesto',
+        fechaPresupuesto: 'Fecha de Presupuesto',
+        tipoViaje: 'Tipo de Viaje',
+        tipoTarifa: 'Tipo de Tarifa',
+        seleccionar: 'Seleccionar...',
+        soloIda: 'Solo Ida',
+        idaVuelta: 'Ida y Vuelta',
+        multiDestino: 'Multi-destino',
+        // Vuelos
+        vuelosIda: 'Vuelos de Ida',
+        vuelosVuelta: 'Vuelos de Vuelta',
+        vuelos: 'Vuelos',
+        agregarIda: '+ Agregar Ida',
+        agregarVuelta: '+ Agregar Vuelta',
+        agregarVuelo: '+ Agregar Vuelo',
+        // Hospedaje
+        hospedaje: 'Hospedaje',
+        agregarHotel: '+ Agregar Hotel',
+        // Servicios
+        incluyeTransfer: '¿Incluye Transfer?',
+        seguroViaje: 'Seguro de Viaje',
+        incluyeSeguro: '¿Incluye Seguro?',
+        alquilerVehiculo: 'Alquiler de Vehículo',
+        incluyeVehiculo: '¿Incluye Alquiler de Vehículo?',
+        si: 'Sí',
+        no: 'No',
+        // Valores
+        valores: 'Valores',
+        moneda: 'Moneda',
+        valorPorPersona: 'Valor por Persona',
+        valorTotal: 'Valor Total',
+        // Botones
+        guardar: 'Guardar',
+        historial: 'Historial',
+        exportarPDF: 'Exportar PDF',
+        exportarExcel: 'Exportar Excel'
+    },
+    pt: {
+        // Header
+        presupuesto: 'Orçamento',
+        deViaje: 'de Viagem',
+        // Secciones
+        datosAgente: 'Dados do Agente',
+        datosCliente: 'Dados do Cliente',
+        datosPresupuesto: 'Dados do Orçamento',
+        // Labels Agente
+        nombreAgente: 'Nome do Agente',
+        emailAgente: 'Email do Agente',
+        telefonoAgente: 'Telefone Agente',
+        // Labels Cliente
+        nombreCliente: 'Nome do Cliente',
+        telefonoCliente: 'Telefone Cliente',
+        ciudadCliente: 'Cidade do Cliente',
+        destinoFinal: 'Destino Final',
+        cantidadPasajeros: 'Quantidade de Passageiros',
+        // Labels Presupuesto
+        numeroPresupuesto: 'Número do Orçamento',
+        fechaPresupuesto: 'Data do Orçamento',
+        tipoViaje: 'Tipo de Viagem',
+        tipoTarifa: 'Tipo de Tarifa',
+        seleccionar: 'Selecionar...',
+        soloIda: 'Só Ida',
+        idaVuelta: 'Ida e Volta',
+        multiDestino: 'Multi-destino',
+        // Vuelos
+        vuelosIda: 'Voos de Ida',
+        vuelosVuelta: 'Voos de Volta',
+        vuelos: 'Voos',
+        agregarIda: '+ Adicionar Ida',
+        agregarVuelta: '+ Adicionar Volta',
+        agregarVuelo: '+ Adicionar Voo',
+        // Hospedaje
+        hospedaje: 'Hospedagem',
+        agregarHotel: '+ Adicionar Hotel',
+        // Servicios
+        incluyeTransfer: 'Inclui Transfer?',
+        seguroViaje: 'Seguro Viagem',
+        incluyeSeguro: 'Inclui Seguro?',
+        alquilerVehiculo: 'Aluguel de Veículo',
+        incluyeVehiculo: 'Inclui Aluguel de Veículo?',
+        si: 'Sim',
+        no: 'Não',
+        // Valores
+        valores: 'Valores',
+        moneda: 'Moeda',
+        valorPorPersona: 'Valor por Pessoa',
+        valorTotal: 'Valor Total',
+        // Botones
+        guardar: 'Salvar',
+        historial: 'Histórico',
+        exportarPDF: 'Exportar PDF',
+        exportarExcel: 'Exportar Excel'
+    }
+};
+
+function cambiarIdioma(idioma) {
+    idiomaActual = idioma;
+    localStorage.setItem('idioma', idioma);
+
+    // Actualizar clases de banderas
+    document.querySelectorAll('.bandera').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.idioma === idioma);
+    });
+
+    // Traducir todos los elementos con data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (TRADUCCIONES[idioma][key]) {
+            el.textContent = TRADUCCIONES[idioma][key];
+        }
+    });
+}
+
+// Aplicar idioma guardado al cargar
+function aplicarIdiomaGuardado() {
+    const idioma = localStorage.getItem('idioma') || 'es';
+    cambiarIdioma(idioma);
+}
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     initForm();
     initFirebase();
+    aplicarIdiomaGuardado();
 });
 
 function initForm() {
@@ -279,7 +422,9 @@ function recolectarDatos() {
         valores: {
             porPersona: document.getElementById('valorPorPersona').value,
             total: document.getElementById('valorTotal').value
-        }
+        },
+        // Idioma
+        idioma: idiomaActual
     };
 
     // Recolectar vuelos
