@@ -265,7 +265,8 @@ function recolectarDatos() {
         presupuesto: {
             numero: document.getElementById('numeroPresupuesto').value,
             fecha: document.getElementById('fechaPresupuesto').value,
-            tipoViaje: document.getElementById('tipoViaje').value
+            tipoViaje: document.getElementById('tipoViaje').value,
+            tipoTarifa: document.getElementById('tipoTarifa').value
         },
         vuelos: [],
         hoteles: [],
@@ -520,6 +521,9 @@ function cargarPresupuestoEnFormulario(presupuesto) {
     // Tipo de viaje y vuelos
     const tipoViaje = presupuesto.presupuesto?.tipoViaje || '';
     document.getElementById('tipoViaje').value = tipoViaje;
+
+    // Tipo de tarifa
+    document.getElementById('tipoTarifa').value = presupuesto.presupuesto?.tipoTarifa || '';
 
     // Limpiar vuelos existentes y recrear según tipo
     limpiarVuelos();

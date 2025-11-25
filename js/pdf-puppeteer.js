@@ -74,6 +74,30 @@ function generarHTML(datos) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
+    // Formatear régimen (separar palabras camelCase)
+    const formatearRegimen = (regimen) => {
+        if (!regimen) return '';
+        const mapeo = {
+            'mediaPension': 'Media Pensión',
+            'pensionCompleta': 'Pensión Completa',
+            'todoIncluido': 'Todo Incluido',
+            'soloAlojamiento': 'Solo Alojamiento',
+            'desayuno': 'Desayuno'
+        };
+        return mapeo[regimen] || capitalizar(regimen);
+    };
+
+    // Formatear tipo de tarifa
+    const formatearTarifa = (tarifa) => {
+        if (!tarifa) return null;
+        const mapeo = {
+            'basic': { nombre: 'BASIC', descripcion: 'Solo mochila', icono: '🎒' },
+            'light': { nombre: 'LIGHT', descripcion: 'Mochila + Carry on', icono: '🎒👜' },
+            'full': { nombre: 'FULL', descripcion: 'Mochila + Carry on + Valija 23kg', icono: '🎒👜🧳' }
+        };
+        return mapeo[tarifa] || null;
+    };
+
     // Datos
     const agente = datos.agente || {};
     const cliente = datos.cliente || {};
@@ -101,6 +125,8 @@ function generarHTML(datos) {
     const fechasVuelo = vuelos.filter(v => v.fecha).map(v => v.fecha).sort();
     const fechaIniVuelo = fechasVuelo[0] ? formatearFecha(fechasVuelo[0]) : '';
     const fechaFinVuelo = fechasVuelo[fechasVuelo.length - 1] ? formatearFecha(fechasVuelo[fechasVuelo.length - 1]) : fechaIniVuelo;
+    // Si es solo ida (misma fecha), mostrar solo una
+    const fechasVueloTexto = fechaIniVuelo === fechaFinVuelo ? fechaIniVuelo : `${fechaIniVuelo} al ${fechaFinVuelo}`;
 
     // Generar HTML de vuelos
     let vuelosHTML = '';
@@ -155,15 +181,19 @@ function generarHTML(datos) {
                 ? `<img src="${hotel.imagen}" alt="${hotel.nombre}">`
                 : `<span>Imagen del hotel</span>`;
 
+            const hotelNombreHTML = hotel.url
+                ? `<a href="${hotel.url}" target="_blank" style="color: #435c91; text-decoration: underline;">${hotel.nombre}</a>`
+                : hotel.nombre;
+
             hotelesHTML += `
             <div class="hotel">
                 <div class="hotel-imagen">${imagenHTML}</div>
                 <div class="hotel-datos">
-                    <p><strong>Hotel:</strong> ${hotel.nombre}</p>
+                    <p><strong>Hotel:</strong> ${hotelNombreHTML}</p>
                     <p><strong>Cuarto:</strong> ${capitalizar(hotel.tipoCuarto) || ''}</p>
                     <p><strong>Entrada:</strong> ${formatearFecha(hotel.fechaEntrada)}</p>
                     <p><strong>Salida:</strong> ${formatearFecha(hotel.fechaSalida)}</p>
-                    <p><strong>Regimen:</strong> ${capitalizar(hotel.regimen) || ''}</p>
+                    <p><strong>Regimen:</strong> ${formatearRegimen(hotel.regimen)}</p>
                 </div>
             </div>`;
         }
@@ -324,9 +354,18 @@ function generarHTML(datos) {
         .datos-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2mm;
+            gap: 2mm 0;
             font-size: 10px;
             color: #1e293b;
+        }
+
+        .datos-grid p {
+            margin: 0;
+        }
+
+        .datos-grid p:nth-child(even) {
+            text-align: right;
+            padding-right: 10mm;
         }
 
         .datos-grid p strong {
@@ -440,6 +479,29 @@ function generarHTML(datos) {
             color: #ed6e1a;
             margin-top: 3px;
             font-weight: 500;
+        }
+
+        /* TARIFA */
+        .tarifa-info {
+            display: flex;
+            align-items: center;
+            gap: 2mm;
+            padding: 2mm 10mm;
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .tarifa-badge {
+            color: #435c91;
+            font-weight: 600;
+        }
+
+        .tarifa-descripcion {
+            color: #94a3b8;
+        }
+
+        .tarifa-iconos {
+            font-size: 10px;
         }
 
         /* HOTEL */
@@ -585,8 +647,14 @@ function generarHTML(datos) {
 
         <!-- VUELOS -->
         ${vuelos.length > 0 && vuelos.some(v => v.numero || v.origen) ? `
-        <div class="barra-titulo">Trechos aéreos${fechaIniVuelo ? ` - ${fechaIniVuelo} al ${fechaFinVuelo}` : ''}</div>
+        <div class="barra-titulo">Trechos aéreos${fechaIniVuelo ? ` - ${fechasVueloTexto}` : ''}</div>
         <div class="vuelos-container">
+            ${presupuesto.tipoTarifa && formatearTarifa(presupuesto.tipoTarifa) ? `
+            <div class="tarifa-info">
+                <span class="tarifa-badge">${formatearTarifa(presupuesto.tipoTarifa).nombre}</span>
+                <span class="tarifa-descripcion">- ${formatearTarifa(presupuesto.tipoTarifa).descripcion}</span>
+            </div>
+            ` : ''}
             ${vuelosHTML}
         </div>
         ` : ''}

@@ -379,6 +379,109 @@ app.get('/api/test-pdf-3', async (req, res) => {
     }
 });
 
+// Endpoint de TEST 4 - Solo ida + URL hotel + Media Pensión + Imagen
+app.get('/api/test-pdf-4', async (req, res) => {
+    try {
+        // Cargar imagen del hotel como base64
+        const imagenPath = path.join(__dirname, 'assets', 'image-to-test.jpg');
+        let imagenBase64 = '';
+        if (fs.existsSync(imagenPath)) {
+            const imagenData = fs.readFileSync(imagenPath);
+            imagenBase64 = `data:image/jpeg;base64,${imagenData.toString('base64')}`;
+        }
+
+        const datos = {
+            "agente": {
+                "nombre": "Franco",
+                "email": "contatofreest@gmail.com",
+                "cadastur": "37.286.620/0001-49",
+                "telefono": "21212312313"
+            },
+            "cliente": {
+                "nombre": "Braian Axel Troncoso",
+                "telefono": "12312313",
+                "ciudad": "Cordoba",
+                "destinoFinal": "Buzios",
+                "cantidadPasajeros": "2"
+            },
+            "presupuesto": {
+                "numero": "25",
+                "fecha": "2025-11-24",
+                "tipoViaje": "ida",
+                "tipoTarifa": "light"
+            },
+            "vuelos": [
+                {
+                    "tipo": "ida",
+                    "numero": "LA8049",
+                    "origen": "COR",
+                    "destino": "GRU",
+                    "fecha": "2025-12-03",
+                    "horaSalida": "11:00",
+                    "horaLlegada": "14:35",
+                    "aerolinea": "LATAM",
+                    "duracion": "3h 35m",
+                    "escalas": "Directo"
+                },
+                {
+                    "tipo": "ida",
+                    "numero": "LA3324",
+                    "origen": "GRU",
+                    "destino": "BUZ",
+                    "fecha": "2025-12-03",
+                    "horaSalida": "16:00",
+                    "horaLlegada": "17:10",
+                    "aerolinea": "LATAM",
+                    "duracion": "1h 10m",
+                    "escalas": "Directo"
+                }
+            ],
+            "hoteles": [
+                {
+                    "nombre": "Hotel Buzios Beach",
+                    "url": "https://www.booking.com/hotel/br/buzios-beach.html",
+                    "tipoCuarto": "doble",
+                    "fechaEntrada": "2025-12-03",
+                    "fechaSalida": "2025-12-10",
+                    "noches": "7",
+                    "regimen": "mediaPension",
+                    "imagen": imagenBase64
+                }
+            ],
+            "incluyeTransfer": true,
+            "incluyeSeguro": true,
+            "incluyeVehiculo": false,
+            "moneda": "USD",
+            "valores": {
+                "porPersona": "850",
+                "total": "1700.00"
+            }
+        };
+
+        console.log('=== TEST PDF 4 - Solo Ida + URL + Media Pensión + Imagen ===');
+
+        const nombreArchivo = `test_presupuesto_4.pdf`;
+        const outputPath = path.join(__dirname, 'temp', nombreArchivo);
+
+        const tempDir = path.join(__dirname, 'temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
+        }
+
+        await generarPDF(datos, outputPath);
+
+        res.download(outputPath, nombreArchivo, (err) => {
+            if (err) {
+                console.error('Error enviando PDF:', err);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error generando PDF test 4:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Endpoint para generar PDF
 app.post('/api/generar-pdf', async (req, res) => {
     try {
