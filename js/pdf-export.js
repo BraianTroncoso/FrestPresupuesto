@@ -128,8 +128,11 @@ async function exportarPDFjsPDF(datos) {
 
     const pax = datos.cliente.cantidadPasajeros || 1;
     let subTexto = `${pax} adulto${pax > 1 ? 's' : ''}`;
-    if (datos.incluyeTransfer) subTexto += ': Transfer IN / OUT';
-    if (datos.incluyeSeguro) subTexto += (datos.incluyeTransfer ? ' + ' : ': ') + 'Seguro de Viaje';
+    const servicios = [];
+    if (datos.incluyeTransfer) servicios.push('Transfer');
+    if (datos.incluyeSeguro) servicios.push('Seguro de Viaje');
+    if (datos.incluyeVehiculo) servicios.push('Alquiler de Vehículo');
+    if (servicios.length > 0) subTexto += ': ' + servicios.join(' + ');
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -199,6 +202,14 @@ async function exportarPDFjsPDF(datos) {
 
         datos.vuelos.forEach((v, idx) => {
             if (v.numero || v.origen) {
+                const esVueloIda = v.tipo === 'ida' || !v.tipo;
+
+                // Para vuelta, invertir origen/destino visualmente
+                const izqCodigo = esVueloIda ? v.origen : v.destino;
+                const izqHora = esVueloIda ? v.horaSalida : v.horaLlegada;
+                const derCodigo = esVueloIda ? v.destino : v.origen;
+                const derHora = esVueloIda ? v.horaLlegada : v.horaSalida;
+
                 if (v.aerolinea) {
                     doc.setFillColor(...AZUL);
                     doc.roundedRect(MARGIN, y, 18, 4, 1, 1, 'F');
@@ -212,11 +223,11 @@ async function exportarPDFjsPDF(datos) {
                 doc.setFontSize(14);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(...TEXTO_PRIMARIO);
-                doc.text(v.horaSalida || '--:--', MARGIN + 25, y, { align: 'center' });
+                doc.text(izqHora || '--:--', MARGIN + 25, y, { align: 'center' });
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...TEXTO_SECUNDARIO);
-                doc.text(v.origen || '---', MARGIN + 25, y + 5, { align: 'center' });
+                doc.text(izqCodigo || '---', MARGIN + 25, y + 5, { align: 'center' });
 
                 const xC = PAGE_WIDTH / 2;
                 doc.text(v.duracion || '', xC, y - 3, { align: 'center' });
@@ -229,7 +240,7 @@ async function exportarPDFjsPDF(datos) {
 
                 doc.setFontSize(12);
                 doc.setTextColor(...AZUL);
-                doc.text('✈', idx === 0 ? PAGE_WIDTH - MARGIN - 50 : MARGIN + 50, y + 1);
+                doc.text('✈', esVueloIda ? PAGE_WIDTH - MARGIN - 50 : MARGIN + 50, y + 1);
 
                 doc.setFontSize(7);
                 doc.setTextColor(...NARANJA);
@@ -238,11 +249,11 @@ async function exportarPDFjsPDF(datos) {
                 doc.setFontSize(14);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(...TEXTO_PRIMARIO);
-                doc.text(v.horaLlegada || '--:--', PAGE_WIDTH - MARGIN - 25, y, { align: 'center' });
+                doc.text(derHora || '--:--', PAGE_WIDTH - MARGIN - 25, y, { align: 'center' });
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...TEXTO_SECUNDARIO);
-                doc.text(v.destino || '---', PAGE_WIDTH - MARGIN - 25, y + 5, { align: 'center' });
+                doc.text(derCodigo || '---', PAGE_WIDTH - MARGIN - 25, y + 5, { align: 'center' });
 
                 y += 12;
             }

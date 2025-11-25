@@ -1,34 +1,49 @@
 # Contexto del Proyecto - Freest Travel
 
 ## Descripción
-Sistema de presupuestos de viaje para la agencia Freest Travel. Genera presupuestos en PDF y Excel.
+Sistema de presupuestos de viaje para la agencia Freest Travel. Genera presupuestos en PDF y Excel con historial en Firebase.
 
 ## Stack
 - HTML/CSS/JavaScript vanilla
-- jsPDF para exportar PDF
+- Node.js + Express (servidor)
+- Puppeteer (PDF de alta calidad)
+- jsPDF (fallback PDF)
 - SheetJS para exportar Excel
+- Firebase Firestore (historial de presupuestos)
 - AeroDataBox API (RapidAPI) para buscar vuelos
 
 ## Estructura de Archivos
 ```
-/home/tincke/Desktop/test-travel/
-├── index.html          # Formulario principal
-├── pdf.html            # Preview de estilos PDF (para iterar rápido)
-├── config.js           # Configuración (API keys, datos agente)
+FrestPresupuesto/
+├── index.html              # Formulario principal
+├── server.js               # Servidor Express + endpoint PDF
+├── config.js               # Configuración (API keys, Firebase) - EN .gitignore
+├── config.example.js       # Template de configuración
+├── package.json            # Dependencias Node
 ├── css/
-│   └── styles.css      # Estilos del formulario
+│   └── styles.css          # Estilos del formulario
 ├── js/
-│   ├── app.js          # Lógica del formulario
-│   ├── flights.js      # Búsqueda de vuelos (API)
-│   ├── pdf-export.js   # Exportación a PDF
-│   └── excel-export.js # Exportación a Excel
+│   ├── app.js              # Lógica del formulario
+│   ├── flights.js          # Búsqueda de vuelos (API)
+│   ├── firebase-db.js      # CRUD Firebase
+│   ├── pdf-export.js       # Exportación PDF (jsPDF fallback)
+│   ├── pdf-puppeteer.js    # Exportación PDF (Puppeteer - alta calidad)
+│   └── excel-export.js     # Exportación a Excel
 ├── assets/
-│   ├── Logo.png        # Logo Freest Travel (1414x2000)
-│   ├── Usuario.png     # Icono usuario para PDF (1414x2000)
-│   ├── Cotizacion.png  # Icono cotización (sin tilde, renombrado)
-│   └── Plazo.png       # Icono plazo
+│   ├── Logo.png            # Logo Freest Travel
+│   ├── Usuario.png         # Icono usuario para PDF
+│   ├── Cotizacion.png      # Icono cotización
+│   └── Plazo.png           # Icono plazo
 └── tests/
-    └── generar_pdf.js  # Script Node para generar PDF de prueba (Puppeteer)
+    └── generar_pdf.js      # Script para generar PDF de prueba
+```
+
+## Instalación
+```bash
+npm install
+npx puppeteer browsers install chrome  # IMPORTANTE
+cp config.example.js config.js          # Completar con API keys
+node server.js                          # http://localhost:3000
 ```
 
 ## Paleta de Colores
@@ -39,69 +54,94 @@ Sistema de presupuestos de viaje para la agencia Freest Travel. Genera presupues
 - **Borde:** #e2e8f0
 - **Fondo claro:** #f4f4f4
 
-## Estructura del PDF (Actualizada)
+## Sistema de Vuelos (Actualizado)
+
+### Tipos de Viaje
+| Tipo | Comportamiento |
+|------|----------------|
+| **Solo ida** | Sección "Vuelos de Ida" + botón "+ Agregar Ida" |
+| **Ida y vuelta** | 2 secciones separadas: "Ida" y "Vuelta" con botones |
+| **Multi-destino** | Sección única + selector Ida/Vuelta en cada vuelo |
+
+### Estructura HTML de Vuelos
+```html
+<section id="seccionVuelos">
+    <div id="seccionVuelosIda">      <!-- Solo ida / Ida y vuelta -->
+        <div id="vuelosIdaContainer"></div>
+        <button onclick="agregarVuelo('ida')">+ Agregar Ida</button>
+    </div>
+    <div id="seccionVuelosVuelta">   <!-- Solo Ida y vuelta -->
+        <div id="vuelosVueltaContainer"></div>
+        <button onclick="agregarVuelo('vuelta')">+ Agregar Vuelta</button>
+    </div>
+    <div id="seccionVuelosMulti">    <!-- Solo Multi-destino -->
+        <div id="vuelosMultiContainer"></div>
+        <button onclick="agregarVuelo('multi')">+ Agregar Vuelo</button>
+    </div>
+</section>
+```
+
+### Campo tipo en cada vuelo
+```html
+<input type="hidden" class="vuelo-tipo" value="ida|vuelta">
+```
+
+### Visualización en PDF
+- **IDA**: `COR 16:30 ✈→ GRU 20:00` (origen izq, destino der)
+- **VUELTA**: `GRU 20:00 ←✈ FOR 16:30` (destino izq, origen der - INVERTIDO)
+
+El avión apunta hacia donde "va" y los vuelos de vuelta se invierten visualmente para que tenga sentido el flujo del viaje completo.
+
+## Barra Destino en PDF
+- **Origen**: `primerVuelo.origen` (de la API)
+- **Destino**: `cliente.destinoFinal` (campo manual) o fallback a `ultimoVuelo.destino`
+
+## Servicios Incluidos
+Toggle Si/No para cada uno, se muestran en barra destino:
+- Transfer (sin "IN / OUT", solo "Transfer")
+- Seguro de Viaje
+- Alquiler de Vehículo
+
+Ejemplo: `2 adultos: Transfer + Seguro de Viaje + Alquiler de Vehículo`
+
+## Estructura del PDF
 1. **Barra azul top** - full width, 4mm alto
-2. **Header** - fondo blanco, logo izquierda, datos agente derecha (centrados verticalmente)
-3. **Barra destino** - 60% naranja + 40% azul con diagonal blanca (20px), N° presupuesto en azul
-4. **Datos del cliente** - icono usuario 70px + título "Datos del cliente" 14px negro + datos en grid
-5. **Vuelos** - barra título naranja 14px + info vuelos con badge aerolínea + avión con dirección (ida/vuelta)
-6. **Hospedaje** - barra título 14px + imagen hotel + datos
-7. **Más información** - iconos Cotización y Plazo (40x40px) + texto 11px
-8. **Valores** - caja naranja, ancho dinámico, posicionada 24mm desde el fondo
+2. **Header** - logo izquierda, datos agente derecha
+3. **Barra destino** - 60% naranja + 40% azul con diagonal blanca
+4. **Datos del cliente** - icono usuario + grid de datos + campo Destino Final
+5. **Trechos aéreos** - badge aerolínea + horarios + avión direccional
+6. **Hospedaje** - imagen hotel + datos
+7. **Más información** - iconos Cotización y Plazo
+8. **Valores** - caja naranja posicionada 24mm desde el fondo
 9. **Barra azul bottom** - full width, 4mm alto
 
-## Flujo de Trabajo para Estilos
-1. Editar `pdf.html` (preview con datos hardcodeados)
-2. Ver cambios en navegador
-3. Una vez aprobado, pasar estilos a `pdf-export.js`
+## Firebase
+- Colección: `presupuestos`
+- Operaciones: guardar, actualizar, obtener, eliminar (soft delete), duplicar
+- Modal de historial con búsqueda por cliente
+
+## Campos del Formulario
+- **Agente**: nombre, email (readonly), cadastur (readonly), teléfono
+- **Cliente**: nombre, teléfono, ciudad, **destinoFinal**, cantidadPasajeros
+- **Presupuesto**: número (autoincremental), fecha, tipoViaje
+- **Vuelos**: tipo, número, origen, destino, fecha, horaSalida, horaLlegada, aerolínea, duración, escalas
+- **Hoteles**: nombre, url, tipoCuarto, fechaEntrada, fechaSalida, noches, regimen, imagen
+- **Toggles**: incluyeTransfer, incluyeSeguro, incluyeVehiculo
+- **Valores**: moneda (USD/BRL), valorPorPersona, valorTotal (auto-calculado)
 
 ## Estado Actual
-- Formulario funcionando
-- Toggle Si/No para Transfer/Seguro/Vehículo
-- Auto-cálculo valor total (valor por persona × pasajeros)
-- Switch USD/BRL
-- PDF exporta con estilos finalizados
-- `pdf.html` sincronizado con `pdf-export.js`
+- ✅ Formulario completo con todos los campos
+- ✅ Sistema de vuelos flexible (ida/vuelta/multi)
+- ✅ PDF con Puppeteer (alta calidad) + fallback jsPDF
+- ✅ Avión direccional según tipo de vuelo
+- ✅ Inversión visual de vuelos de vuelta
+- ✅ Firebase para historial
+- ✅ Exportación Excel
+- ✅ Búsqueda de vuelos con AeroDataBox API
 
-## Estilos Clave del PDF
-
-### Barra Destino (diagonal)
-```css
-.destino-info { width: 60%; }
-.destino-info::after {
-    width: 20px;
-    clip-path: polygon(100% 0, 100% 100%, 0 100%);
-}
-.numero-presupuesto { width: 40%; }
-.numero-presupuesto::before {
-    width: 20px;
-    clip-path: polygon(0 0, 100% 0, 0 100%);
-}
-```
-
-### Sección Más Información
-```css
-.info-icon {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-}
-.info-item { font-size: 11px; }
-```
-
-### Valores Box
-```css
-.valores-box {
-    position: absolute;
-    bottom: 24mm;
-    right: 0;
-    width: auto;
-}
-```
-
-## Último Cambio
-- Diagonal blanca entre naranja y azul en barra destino (20px)
-- Sección "Más información" (no "informaciones") con iconos 40x40px y texto 11px
-- Valores-box posicionado 24mm desde el fondo, ancho dinámico
-- Barra azul bottom agregada (4mm)
-- Estilos sincronizados entre pdf.html y pdf-export.js
+## Última Actualización
+2025-11-24
+- Sistema de vuelos flexible con múltiples idas/vueltas
+- Inversión visual de vuelos de vuelta en PDF
+- Campo destinoFinal para barra destino
+- Servicios incluidos: Transfer + Seguro + Vehículo

@@ -90,11 +90,26 @@
 
             <!-- Sección Vuelos -->
             <section class="form-section" id="seccionVuelos" style="display:none;">
-                <h2>Vuelos</h2>
-                <div id="vuelosContainer">
-                    <!-- Vuelos dinámicos se agregan aquí -->
+                <!-- Sub-sección Vuelos de Ida -->
+                <div id="seccionVuelosIda" class="vuelos-subseccion" style="display:none;">
+                    <h2>Vuelos de Ida</h2>
+                    <div id="vuelosIdaContainer"></div>
+                    <button type="button" class="btn-add" onclick="agregarVuelo('ida')">+ Agregar Ida</button>
                 </div>
-                <button type="button" class="btn-add" id="btnAgregarVuelo" onclick="agregarVuelo()" style="display:none;">+ Agregar Vuelo</button>
+
+                <!-- Sub-sección Vuelos de Vuelta -->
+                <div id="seccionVuelosVuelta" class="vuelos-subseccion" style="display:none;">
+                    <h2>Vuelos de Vuelta</h2>
+                    <div id="vuelosVueltaContainer"></div>
+                    <button type="button" class="btn-add" onclick="agregarVuelo('vuelta')">+ Agregar Vuelta</button>
+                </div>
+
+                <!-- Sub-sección Multi-destino -->
+                <div id="seccionVuelosMulti" class="vuelos-subseccion" style="display:none;">
+                    <h2>Vuelos</h2>
+                    <div id="vuelosMultiContainer"></div>
+                    <button type="button" class="btn-add" onclick="agregarVuelo('multi')">+ Agregar Vuelo</button>
+                </div>
             </section>
 
             <!-- Sección Hospedaje -->
@@ -189,6 +204,15 @@
                     <button type="button" class="btn-remove" onclick="removerItem(this)">×</button>
                 </div>
             </div>
+            <!-- Selector de tipo (solo visible en multi-destino) -->
+            <div class="vuelo-tipo-selector" style="display:none;">
+                <label>Tipo:</label>
+                <select class="vuelo-tipo-select" onchange="actualizarTipoVuelo(this)">
+                    <option value="ida">Ida</option>
+                    <option value="vuelta">Vuelta</option>
+                </select>
+            </div>
+            <input type="hidden" class="vuelo-tipo" value="ida">
             <!-- Input principal -->
             <div class="vuelo-input-principal">
                 <div class="form-group">

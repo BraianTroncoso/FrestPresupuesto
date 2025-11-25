@@ -80,15 +80,31 @@ let vueloCount = 0;
 let hotelCount = 0;
 
 // Agregar vuelo dinámico
-function agregarVuelo(label = null) {
+function agregarVuelo(tipo = 'ida') {
     vueloCount++;
-    const container = document.getElementById('vuelosContainer');
     const template = document.getElementById('vueloTemplate');
     const clone = template.content.cloneNode(true);
 
-    // Usar label personalizado o número
-    const itemNumber = clone.querySelector('.item-number');
-    itemNumber.textContent = label || vueloCount;
+    // Determinar contenedor y label según tipo
+    let container;
+    let labelTexto;
+
+    if (tipo === 'ida') {
+        container = document.getElementById('vuelosIdaContainer');
+        labelTexto = 'Ida ' + (document.querySelectorAll('#vuelosIdaContainer .vuelo-item').length + 1);
+    } else if (tipo === 'vuelta') {
+        container = document.getElementById('vuelosVueltaContainer');
+        labelTexto = 'Vuelta ' + (document.querySelectorAll('#vuelosVueltaContainer .vuelo-item').length + 1);
+    } else { // multi
+        container = document.getElementById('vuelosMultiContainer');
+        labelTexto = document.querySelectorAll('#vuelosMultiContainer .vuelo-item').length + 1;
+        // Mostrar selector de tipo en multi-destino
+        clone.querySelector('.vuelo-tipo-selector').style.display = 'flex';
+    }
+
+    // Asignar label y tipo
+    clone.querySelector('.item-number').textContent = labelTexto;
+    clone.querySelector('.vuelo-tipo').value = tipo === 'multi' ? 'ida' : tipo;
 
     // Configurar fecha mínima (hoy) - mantener disabled
     const fechaInput = clone.querySelector('.vuelo-fecha');
@@ -103,10 +119,17 @@ function agregarVuelo(label = null) {
     container.appendChild(clone);
 }
 
+// Actualizar tipo de vuelo cuando cambia el selector (multi-destino)
+function actualizarTipoVuelo(select) {
+    const vueloItem = select.closest('.vuelo-item');
+    vueloItem.querySelector('.vuelo-tipo').value = select.value;
+}
+
 // Limpiar todos los vuelos
 function limpiarVuelos() {
-    const container = document.getElementById('vuelosContainer');
-    container.innerHTML = '';
+    document.getElementById('vuelosIdaContainer').innerHTML = '';
+    document.getElementById('vuelosVueltaContainer').innerHTML = '';
+    document.getElementById('vuelosMultiContainer').innerHTML = '';
     vueloCount = 0;
 }
 
@@ -114,7 +137,11 @@ function limpiarVuelos() {
 function actualizarVuelosPorTipo() {
     const tipoViaje = document.getElementById('tipoViaje').value;
     const seccionVuelos = document.getElementById('seccionVuelos');
-    const btnAgregar = document.getElementById('btnAgregarVuelo');
+
+    // Ocultar todas las sub-secciones
+    document.getElementById('seccionVuelosIda').style.display = 'none';
+    document.getElementById('seccionVuelosVuelta').style.display = 'none';
+    document.getElementById('seccionVuelosMulti').style.display = 'none';
 
     // Limpiar vuelos existentes
     limpiarVuelos();
@@ -130,23 +157,24 @@ function actualizarVuelosPorTipo() {
 
     switch (tipoViaje) {
         case 'ida':
-            // Solo ida: 1 vuelo, sin botón agregar
-            agregarVuelo('Ida');
-            btnAgregar.style.display = 'none';
+            // Solo ida: sección de ida con botón agregar
+            document.getElementById('seccionVuelosIda').style.display = 'block';
+            agregarVuelo('ida');
             break;
 
         case 'idaVuelta':
-            // Ida y vuelta: 2 vuelos, sin botón agregar
-            agregarVuelo('Ida');
-            agregarVuelo('Vuelta');
-            btnAgregar.style.display = 'none';
+            // Ida y vuelta: dos secciones separadas
+            document.getElementById('seccionVuelosIda').style.display = 'block';
+            document.getElementById('seccionVuelosVuelta').style.display = 'block';
+            agregarVuelo('ida');
+            agregarVuelo('vuelta');
             break;
 
         case 'multiDestino':
-            // Multi-destino: 2 vuelos iniciales + botón agregar
-            agregarVuelo();
-            agregarVuelo();
-            btnAgregar.style.display = 'inline-flex';
+            // Multi-destino: sección única con selector de tipo por vuelo
+            document.getElementById('seccionVuelosMulti').style.display = 'block';
+            agregarVuelo('multi');
+            agregarVuelo('multi');
             break;
     }
 }
@@ -240,6 +268,7 @@ function recolectarDatos() {
     // Recolectar vuelos
     document.querySelectorAll('.vuelo-item').forEach(item => {
         datos.vuelos.push({
+            tipo: item.querySelector('.vuelo-tipo').value,
             numero: item.querySelector('.vuelo-numero').value,
             origen: item.querySelector('.vuelo-origen').value,
             destino: item.querySelector('.vuelo-destino').value,

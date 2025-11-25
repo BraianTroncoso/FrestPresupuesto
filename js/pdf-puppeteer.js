@@ -86,8 +86,9 @@ function generarHTML(datos) {
 
     // Servicios incluidos
     const servicios = [];
-    if (datos.incluyeTransfer) servicios.push('Transfer IN / OUT');
+    if (datos.incluyeTransfer) servicios.push('Transfer');
     if (datos.incluyeSeguro) servicios.push('Seguro de Viaje');
+    if (datos.incluyeVehiculo) servicios.push('Alquiler de Vehículo');
     const serviciosTexto = servicios.length > 0 ? ': ' + servicios.join(' + ') : '';
 
     // Ruta del viaje
@@ -105,15 +106,24 @@ function generarHTML(datos) {
     let vuelosHTML = '';
     vuelos.forEach((vuelo, idx) => {
         if (vuelo.numero || vuelo.origen) {
-            const esIda = idx === 0;
+            const esIda = vuelo.tipo === 'ida' || !vuelo.tipo;
+
+            // Para vuelta, invertir códigos Y horas
+
+            
+            const izqCodigo = esIda ? vuelo.origen : vuelo.destino;
+            const izqHora = esIda ? vuelo.horaSalida : vuelo.horaLlegada;
+            const derCodigo = esIda ? vuelo.destino : vuelo.origen;
+            const derHora = esIda ? vuelo.horaLlegada : vuelo.horaSalida;
+
             vuelosHTML += `
             <div class="vuelo">
                 <div>
                     <span class="vuelo-badge">${vuelo.aerolinea || 'AIRLINE'}</span>
                 </div>
                 <div class="vuelo-tiempo">
-                    <div class="hora">${vuelo.horaSalida || '--:--'}</div>
-                    <div class="codigo">${vuelo.origen || '---'}</div>
+                    <div class="hora">${izqHora || '--:--'}</div>
+                    <div class="codigo">${izqCodigo || '---'}</div>
                 </div>
                 <div class="vuelo-flecha">
                     <div class="duracion">${vuelo.duracion || ''}</div>
@@ -124,8 +134,8 @@ function generarHTML(datos) {
                     <div class="escalas">${vuelo.escalas || 'Directo'}</div>
                 </div>
                 <div class="vuelo-tiempo">
-                    <div class="hora">${vuelo.horaLlegada || '--:--'}</div>
-                    <div class="codigo">${vuelo.destino || '---'}</div>
+                    <div class="hora">${derHora || '--:--'}</div>
+                    <div class="codigo">${derCodigo || '---'}</div>
                 </div>
             </div>`;
         }
