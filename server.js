@@ -10,8 +10,10 @@ const PORT = 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(__dirname));
+
 
 // Endpoint de TEST - datos fijos para probar
 app.get('/api/test-pdf', async (req, res) => {
@@ -251,6 +253,128 @@ app.get('/api/test-pdf-2', async (req, res) => {
 
     } catch (error) {
         console.error('Error generando PDF test 2:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Endpoint de TEST 3 - San Andrés (con vuelo que llega al día siguiente)
+app.get('/api/test-pdf-3', async (req, res) => {
+    try {
+        const datos = {
+            "agente": {
+                "nombre": "Franco",
+                "email": "contatofreest@gmail.com",
+                "cadastur": "37.286.620/0001-49",
+                "telefono": "21212312313"
+            },
+            "cliente": {
+                "nombre": "Braian Axel Troncoso",
+                "telefono": "12312313",
+                "ciudad": "Cordoba",
+                "destinoFinal": "San Andres",
+                "cantidadPasajeros": "2"
+            },
+            "presupuesto": {
+                "numero": "19",
+                "fecha": "2025-11-25",
+                "tipoViaje": "idaVuelta"
+            },
+            "vuelos": [
+                {
+                    "tipo": "ida",
+                    "numero": "CM509",
+                    "origen": "Córdoba (COR)",
+                    "destino": "Tocumen (PTY)",
+                    "fecha": "2025-12-16",
+                    "horaSalida": "02:00",
+                    "horaLlegada": "06:36",
+                    "aerolinea": "Copa Airlines",
+                    "duracion": "6h 36m",
+                    "escalas": "Directo"
+                },
+                {
+                    "tipo": "ida",
+                    "numero": "CM230",
+                    "origen": "Tocumen (PTY)",
+                    "destino": "San Andrés (ADZ)",
+                    "fecha": "2025-12-16",
+                    "horaSalida": "07:25",
+                    "horaLlegada": "08:42",
+                    "aerolinea": "Copa Airlines",
+                    "duracion": "1h 17m",
+                    "escalas": "Directo"
+                },
+                {
+                    "tipo": "vuelta",
+                    "numero": "CM231",
+                    "origen": "San Andrés (ADZ)",
+                    "destino": "Tocumen (PTY)",
+                    "fecha": "2025-12-23",
+                    "horaSalida": "09:38",
+                    "horaLlegada": "10:59",
+                    "aerolinea": "Copa Airlines",
+                    "duracion": "1h 21m",
+                    "escalas": "Directo"
+                },
+                {
+                    "tipo": "vuelta",
+                    "numero": "CM508",
+                    "origen": "Tocumen (PTY)",
+                    "destino": "Córdoba (COR)",
+                    "fecha": "2025-12-23",
+                    "horaSalida": "15:40",
+                    "horaLlegada": "00:21",
+                    "aerolinea": "Copa Airlines",
+                    "duracion": "6h 41m",
+                    "escalas": "Directo"
+                }
+            ],
+            "hoteles": [
+                {
+                    "nombre": "Hotel Andres",
+                    "url": "",
+                    "tipoCuarto": "doble",
+                    "fechaEntrada": "2025-12-16",
+                    "fechaSalida": "2025-12-23",
+                    "noches": "7",
+                    "regimen": ""
+                }
+            ],
+            "incluyeTransfer": true,
+            "incluyeSeguro": true,
+            "incluyeVehiculo": false,
+            "moneda": "USD",
+            "valores": {
+                "porPersona": "1000",
+                "total": "2000.00"
+            }
+        };
+
+        console.log('=== TEST PDF 3 - San Andrés ===');
+        console.log('Vuelos:');
+        datos.vuelos.forEach((v, i) => {
+            const llegaSiguiente = v.horaLlegada < v.horaSalida ? ' (+1)' : '';
+            console.log(`  ${i+1}. ${v.tipo.toUpperCase()}: ${v.origen} → ${v.destino} (${v.horaSalida}-${v.horaLlegada}${llegaSiguiente})`);
+        });
+
+        const nombreArchivo = `test_presupuesto_3.pdf`;
+        const outputPath = path.join(__dirname, 'temp', nombreArchivo);
+
+        const tempDir = path.join(__dirname, 'temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
+        }
+
+        await generarPDF(datos, outputPath);
+
+        res.download(outputPath, nombreArchivo, (err) => {
+            if (err) {
+                console.error('Error enviando PDF:', err);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error generando PDF test 3:', error);
         res.status(500).json({ error: error.message });
     }
 });

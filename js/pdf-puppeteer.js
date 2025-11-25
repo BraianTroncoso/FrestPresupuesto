@@ -110,11 +110,17 @@ function generarHTML(datos) {
 
             // Para vuelta, invertir códigos Y horas
 
-            
             const izqCodigo = esIda ? vuelo.origen : vuelo.destino;
             const izqHora = esIda ? vuelo.horaSalida : vuelo.horaLlegada;
             const derCodigo = esIda ? vuelo.destino : vuelo.origen;
             const derHora = esIda ? vuelo.horaLlegada : vuelo.horaSalida;
+
+            // Detectar si llega al día siguiente (hora llegada < hora salida)
+            const llegaSiguienteDia = vuelo.horaLlegada && vuelo.horaSalida && vuelo.horaLlegada < vuelo.horaSalida;
+            // El +1 va en la hora de llegada: derHora para IDA, izqHora para VUELTA
+            const izqMas1 = !esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
+            const derMas1 = esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
+
 
             vuelosHTML += `
             <div class="vuelo">
@@ -122,7 +128,7 @@ function generarHTML(datos) {
                     <span class="vuelo-badge">${vuelo.aerolinea || 'AIRLINE'}</span>
                 </div>
                 <div class="vuelo-tiempo">
-                    <div class="hora">${izqHora || '--:--'}</div>
+                    <div class="hora">${izqHora || '--:--'}${izqMas1}</div>
                     <div class="codigo">${izqCodigo || '---'}</div>
                 </div>
                 <div class="vuelo-flecha">
@@ -134,7 +140,7 @@ function generarHTML(datos) {
                     <div class="escalas">${vuelo.escalas || 'Directo'}</div>
                 </div>
                 <div class="vuelo-tiempo">
-                    <div class="hora">${derHora || '--:--'}</div>
+                    <div class="hora">${derHora || '--:--'}${derMas1}</div>
                     <div class="codigo">${derCodigo || '---'}</div>
                 </div>
             </div>`;
@@ -145,9 +151,13 @@ function generarHTML(datos) {
     let hotelesHTML = '';
     hoteles.forEach(hotel => {
         if (hotel.nombre) {
+            const imagenHTML = hotel.imagen
+                ? `<img src="${hotel.imagen}" alt="${hotel.nombre}">`
+                : `<span>Imagen del hotel</span>`;
+
             hotelesHTML += `
             <div class="hotel">
-                <div class="hotel-imagen">Imagen del hotel</div>
+                <div class="hotel-imagen">${imagenHTML}</div>
                 <div class="hotel-datos">
                     <p><strong>Hotel:</strong> ${hotel.nombre}</p>
                     <p><strong>Cuarto:</strong> ${capitalizar(hotel.tipoCuarto) || ''}</p>
@@ -375,6 +385,12 @@ function generarHTML(datos) {
             color: #1e293b;
         }
 
+        .vuelo-tiempo .hora sup {
+            font-size: 9px;
+            color: #ed6e1a;
+            font-weight: bold;
+        }
+
         .vuelo-tiempo .codigo {
             font-size: 9px;
             color: #64748b;
@@ -451,6 +467,13 @@ function generarHTML(datos) {
             justify-content: center;
             color: #64748b;
             font-size: 9px;
+            overflow: hidden;
+        }
+
+        .hotel-imagen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .hotel-datos {

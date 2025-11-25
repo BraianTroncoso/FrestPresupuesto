@@ -210,6 +210,22 @@ function agregarHotel() {
 
     fechaEntrada.addEventListener('change', calcularNoches);
     fechaSalida.addEventListener('change', calcularNoches);
+
+    // Listener para convertir imagen a base64
+    const imagenInput = lastItem.querySelector('.hotel-imagen');
+    if (imagenInput) {
+        imagenInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Guardar base64 en un data attribute
+                    imagenInput.dataset.base64 = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
 
 
@@ -283,6 +299,7 @@ function recolectarDatos() {
 
     // Recolectar hoteles
     document.querySelectorAll('.hotel-item').forEach(item => {
+        const imagenInput = item.querySelector('.hotel-imagen');
         datos.hoteles.push({
             nombre: item.querySelector('.hotel-nombre').value,
             url: item.querySelector('.hotel-url').value,
@@ -290,7 +307,8 @@ function recolectarDatos() {
             fechaEntrada: item.querySelector('.hotel-fecha-entrada').value,
             fechaSalida: item.querySelector('.hotel-fecha-salida').value,
             noches: item.querySelector('.hotel-noches').value,
-            regimen: item.querySelector('.hotel-regimen').value
+            regimen: item.querySelector('.hotel-regimen').value,
+            imagen: imagenInput ? imagenInput.dataset.base64 || '' : ''
         });
     });
 

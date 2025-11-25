@@ -87,10 +87,28 @@ node server.js                          # http://localhost:3000
 ```
 
 ### Visualización en PDF
-- **IDA**: `COR 16:30 ✈→ GRU 20:00` (origen izq, destino der)
-- **VUELTA**: `GRU 20:00 ←✈ FOR 16:30` (destino izq, origen der - INVERTIDO)
+- **IDA**: `COR 04:05 ✈→ GRU 07:10` (origen + horaSalida izq, destino + horaLlegada der)
+- **VUELTA**: `GIG 17:00 ←✈ BPS 15:30` (destino + horaLlegada izq, origen + horaSalida der)
 
-El avión apunta hacia donde "va" y los vuelos de vuelta se invierten visualmente para que tenga sentido el flujo del viaje completo.
+Para vuelta se invierten CÓDIGOS y HORAS para que el flujo visual tenga sentido.
+
+### Indicador +1 (día siguiente)
+Cuando un vuelo llega al día siguiente (horaLlegada < horaSalida), se muestra `+1` en naranja:
+- `PTY 15:40 ✈→ COR 00:21⁺¹` (ida)
+- `COR 00:21⁺¹ ←✈ PTY 15:40` (vuelta)
+
+### Lógica en pdf-puppeteer.js (líneas 112-122)
+```javascript
+const esIda = vuelo.tipo === 'ida' || !vuelo.tipo;
+const izqCodigo = esIda ? vuelo.origen : vuelo.destino;
+const izqHora = esIda ? vuelo.horaSalida : vuelo.horaLlegada;
+const derCodigo = esIda ? vuelo.destino : vuelo.origen;
+const derHora = esIda ? vuelo.horaLlegada : vuelo.horaSalida;
+
+const llegaSiguienteDia = vuelo.horaLlegada && vuelo.horaSalida && vuelo.horaLlegada < vuelo.horaSalida;
+const izqMas1 = !esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
+const derMas1 = esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
+```
 
 ## Barra Destino en PDF
 - **Origen**: `primerVuelo.origen` (de la API)
@@ -109,11 +127,17 @@ Ejemplo: `2 adultos: Transfer + Seguro de Viaje + Alquiler de Vehículo`
 2. **Header** - logo izquierda, datos agente derecha
 3. **Barra destino** - 60% naranja + 40% azul con diagonal blanca
 4. **Datos del cliente** - icono usuario + grid de datos + campo Destino Final
-5. **Trechos aéreos** - badge aerolínea + horarios + avión direccional
-6. **Hospedaje** - imagen hotel + datos
+5. **Trechos aéreos** - badge aerolínea + horarios + avión direccional + indicador +1
+6. **Hospedaje** - imagen hotel (base64) + datos
 7. **Más información** - iconos Cotización y Plazo
 8. **Valores** - caja naranja posicionada 24mm desde el fondo
 9. **Barra azul bottom** - full width, 4mm alto
+
+## Imagen del Hotel
+- El formulario tiene `<input type="file" class="hotel-imagen">`
+- Al seleccionar imagen, se convierte a base64 y guarda en `dataset.base64`
+- En `recolectarDatos()` se incluye el campo `imagen`
+- El PDF muestra la imagen con `object-fit: cover` en un contenedor de 55mm x 35mm
 
 ## Firebase
 - Colección: `presupuestos`
@@ -129,19 +153,37 @@ Ejemplo: `2 adultos: Transfer + Seguro de Viaje + Alquiler de Vehículo`
 - **Toggles**: incluyeTransfer, incluyeSeguro, incluyeVehiculo
 - **Valores**: moneda (USD/BRL), valorPorPersona, valorTotal (auto-calculado)
 
+## Servidor Express
+- Puerto: 3000
+- Límite payload: 50mb (para imágenes base64)
+- Endpoints:
+  - `POST /api/generar-pdf` - Genera PDF con datos del formulario
+  - `GET /api/test-pdf` - Test con datos de Fortaleza
+  - `GET /api/test-pdf-2` - Test con datos de Porto Seguro
+  - `GET /api/test-pdf-3` - Test con datos de San Andrés (vuelo +1)
+
+## Nota WSL/Windows
+Si editás archivos desde WSL y el servidor corre en Windows, puede haber problemas de sincronización. Para forzar:
+```powershell
+(Get-Content .\archivo.js) | Set-Content .\archivo.js
+```
+
 ## Estado Actual
 - ✅ Formulario completo con todos los campos
 - ✅ Sistema de vuelos flexible (ida/vuelta/multi)
 - ✅ PDF con Puppeteer (alta calidad) + fallback jsPDF
 - ✅ Avión direccional según tipo de vuelo
-- ✅ Inversión visual de vuelos de vuelta
+- ✅ Inversión visual de vuelos de vuelta (códigos Y horas)
+- ✅ Indicador +1 para vuelos que llegan al día siguiente
+- ✅ Imagen del hotel en PDF (base64)
 - ✅ Firebase para historial
 - ✅ Exportación Excel
 - ✅ Búsqueda de vuelos con AeroDataBox API
 
 ## Última Actualización
-2025-11-24
-- Sistema de vuelos flexible con múltiples idas/vueltas
-- Inversión visual de vuelos de vuelta en PDF
-- Campo destinoFinal para barra destino
-- Servicios incluidos: Transfer + Seguro + Vehículo
+2025-11-25
+- Fix inversión de vuelos de vuelta: ahora invierte códigos Y horas
+- Indicador +1 en naranja para vuelos que cruzan medianoche
+- Imagen del hotel se sube y muestra en el PDF
+- Límite de payload aumentado a 50mb
+- Endpoints de test para debugging rápido
