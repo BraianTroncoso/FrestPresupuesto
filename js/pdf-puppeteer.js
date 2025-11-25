@@ -210,10 +210,10 @@ function generarHTML(datos) {
         /* BARRA AZUL BOTTOM */
         .barra-azul-bottom {
             background: #435c91;
-            height: 4mm;
+            height: 5mm;
             width: 100%;
             position: absolute;
-            bottom: 0;
+            bottom: -1px;
             left: 0;
         }
 
@@ -257,17 +257,7 @@ function generarHTML(datos) {
             padding: 4mm 10mm;
             color: white;
             position: relative;
-        }
-
-        .destino-info::after {
-            content: '';
-            position: absolute;
-            right: -1px;
-            top: 0;
-            height: 100%;
-            width: 20px;
-            background: white;
-            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+            z-index: 1;
         }
 
         .destino-info h2 {
@@ -290,17 +280,20 @@ function generarHTML(datos) {
             font-size: 16px;
             font-weight: bold;
             position: relative;
+            z-index: 1;
         }
 
-        .numero-presupuesto::before {
+        /* Diagonal blanca en el centro */
+        .barra-destino::after {
             content: '';
             position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 20px;
+            left: 60%;
+            top: -2px;
+            height: calc(100% + 4px);
+            width: 30px;
             background: white;
-            clip-path: polygon(0 0, 100% 0, 0 100%);
+            transform: translateX(-50%) skewX(-15deg);
+            z-index: 2;
         }
 
         /* DATOS CLIENTE */

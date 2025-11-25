@@ -5,6 +5,15 @@ async function exportarPDF() {
     console.log('=== INICIANDO EXPORTAR PDF ===');
 
     try {
+        // Validar formulario antes de exportar
+        if (typeof validarFormulario === 'function') {
+            const esValido = validarFormulario();
+            if (!esValido) {
+                console.log('Formulario inválido, cancelando exportación');
+                return;
+            }
+        }
+
         const datos = recolectarDatos();
         console.log('Datos recolectados:', datos);
 
@@ -16,34 +25,76 @@ async function exportarPDF() {
                 body: JSON.stringify(datos)
             });
 
-            if (response.ok) {
-                // Descargar el PDF
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `presupuesto_${datos.presupuesto.numero || 'sin-numero'}_${datos.cliente.nombre || 'cliente'}.pdf`.replace(/\s+/g, '_');
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+            // Manejar errores HTTP específicos
+            if (!response.ok) {
+                const errorMsg = `HTTP ${response.status}`;
+                console.error('Error del servidor:', errorMsg);
 
-                if (typeof showToast === 'function') {
-                    showToast('PDF exportado correctamente (Puppeteer)');
+                // Si es error 413 (payload muy grande), mostrar error amigable
+                if (response.status === 413) {
+                    if (typeof mostrarErrorAmigable === 'function') {
+                        mostrarErrorAmigable('413 Payload Too Large');
+                    } else {
+                        showToast('La imagen es muy grande. Intentá con una más pequeña.', 'error');
+                    }
+                    return;
                 }
-                console.log('=== PDF EXPORTADO (PUPPETEER) ===');
+
+                // Si es error 500, mostrar error amigable
+                if (response.status === 500) {
+                    if (typeof mostrarErrorAmigable === 'function') {
+                        mostrarErrorAmigable('500 Internal Server Error');
+                    } else {
+                        showToast('Error del servidor. Revisá los datos e intentá de nuevo.', 'error');
+                    }
+                    return;
+                }
+
+                // Otros errores, intentar fallback
+                throw new Error(errorMsg);
+            }
+
+            // Descargar el PDF
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `presupuesto_${datos.presupuesto.numero || 'sin-numero'}_${datos.cliente.nombre || 'cliente'}.pdf`.replace(/\s+/g, '_');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            if (typeof showToast === 'function') {
+                showToast('PDF exportado correctamente', 'success');
+            }
+            console.log('=== PDF EXPORTADO (PUPPETEER) ===');
+            return;
+
+        } catch (serverError) {
+            console.log('Error con servidor Puppeteer:', serverError.message);
+
+            // Si es un error de red (servidor no disponible), intentar fallback
+            if (serverError.message === 'Failed to fetch' || serverError.name === 'TypeError') {
+                console.log('Servidor no disponible, usando jsPDF fallback');
+                await exportarPDFjsPDF(datos);
                 return;
             }
-        } catch (serverError) {
-            console.log('Servidor no disponible, usando jsPDF fallback');
-        }
 
-        // Fallback a jsPDF si el servidor no está disponible
-        await exportarPDFjsPDF(datos);
+            // Si es otro tipo de error, propagarlo
+            throw serverError;
+        }
 
     } catch (error) {
         console.error('ERROR EN EXPORTAR PDF:', error);
-        alert('Error al generar PDF: ' + error.message);
+
+        // Usar el sistema de errores amigables
+        if (typeof mostrarErrorAmigable === 'function') {
+            mostrarErrorAmigable(error.message || error.toString());
+        } else {
+            // Fallback al toast si no está disponible mostrarErrorAmigable
+            showToast('Error al generar el PDF. Revisá los datos e intentá de nuevo.', 'error');
+        }
     }
 }
 

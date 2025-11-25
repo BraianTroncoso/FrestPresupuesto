@@ -351,14 +351,18 @@ function formatearMoneda(valor, moneda = null) {
 // ==================== GUARDAR PRESUPUESTO ====================
 
 async function guardarPresupuestoActual() {
+    // Validar formulario antes de guardar
+    if (typeof validarFormulario === 'function') {
+        // Para guardar, solo validamos nombre del cliente (menos estricto que exportar)
+        const nombreCliente = document.getElementById('nombreCliente').value.trim();
+        if (!nombreCliente) {
+            mostrarErrorCampo('nombreCliente', 'Ingresá el nombre del cliente para guardar');
+            return;
+        }
+    }
+
     const datos = recolectarDatos();
     const presupuestoId = document.getElementById('presupuestoId').value;
-
-    // Validación básica
-    if (!datos.cliente.nombre) {
-        showToast('Por favor ingresa el nombre del cliente', 'error');
-        return;
-    }
 
     try {
         let resultado;
@@ -379,10 +383,19 @@ async function guardarPresupuestoActual() {
         }
 
         if (!resultado.success) {
-            showToast('Error: ' + resultado.error, 'error');
+            if (typeof mostrarErrorAmigable === 'function') {
+                mostrarErrorAmigable(resultado.error);
+            } else {
+                showToast('Error al guardar el presupuesto', 'error');
+            }
         }
     } catch (error) {
-        showToast('Error al guardar: ' + error.message, 'error');
+        console.error('Error guardando presupuesto:', error);
+        if (typeof mostrarErrorAmigable === 'function') {
+            mostrarErrorAmigable(error.message || error.toString());
+        } else {
+            showToast('Error al guardar. Verificá tu conexión e intentá de nuevo.', 'error');
+        }
     }
 }
 
@@ -654,3 +667,293 @@ async function eliminarPresupuestoUI(id) {
         showToast('Error: ' + error.message, 'error');
     }
 }
+
+// ==================== SISTEMA DE VALIDACIÓN ====================
+
+// Mensajes de error amigables para errores técnicos
+const ERRORES_AMIGABLES = {
+    // Errores de red/servidor
+    'Failed to fetch': {
+        titulo: 'Sin conexión al servidor',
+        mensaje: 'No se pudo conectar con el servidor para generar el PDF.',
+        tip: 'Verificá que el servidor esté corriendo (node server.js) y que tengas conexión a internet.'
+    },
+    'NetworkError': {
+        titulo: 'Error de conexión',
+        mensaje: 'Hubo un problema de red al intentar procesar tu solicitud.',
+        tip: 'Revisá tu conexión a internet o intentá de nuevo en unos segundos.'
+    },
+    'json': {
+        titulo: 'Error al procesar la respuesta',
+        mensaje: 'El servidor no pudo procesar correctamente los datos del presupuesto.',
+        tip: 'Verificá que todos los campos estén completos y volvé a intentar.'
+    },
+    'Unexpected end of JSON': {
+        titulo: 'Respuesta incompleta del servidor',
+        mensaje: 'El servidor no pudo completar la operación.',
+        tip: 'Es posible que el servidor se haya reiniciado. Esperá unos segundos y volvé a intentar.'
+    },
+    '413': {
+        titulo: 'Imagen demasiado grande',
+        mensaje: 'La imagen del hotel que subiste es muy pesada.',
+        tip: 'Intentá subir una imagen más pequeña (menos de 5MB) o reducí su tamaño.'
+    },
+    '500': {
+        titulo: 'Error del servidor',
+        mensaje: 'Ocurrió un error interno al procesar tu solicitud.',
+        tip: 'Revisá que todos los datos estén correctos. Si el problema persiste, reiniciá el servidor.'
+    },
+    'timeout': {
+        titulo: 'Tiempo de espera agotado',
+        mensaje: 'El servidor tardó demasiado en responder.',
+        tip: 'Puede que el servidor esté ocupado. Esperá un momento y volvé a intentar.'
+    },
+    // Errores de Firebase
+    'firestore': {
+        titulo: 'Error al guardar datos',
+        mensaje: 'No se pudo guardar el presupuesto en la base de datos.',
+        tip: 'Verificá tu conexión a internet. Si el problema persiste, recargá la página.'
+    },
+    'permission-denied': {
+        titulo: 'Sin permiso para guardar',
+        mensaje: 'No tenés permisos para realizar esta acción.',
+        tip: 'Verificá que estés usando la configuración correcta de Firebase.'
+    },
+    'unavailable': {
+        titulo: 'Servicio no disponible',
+        mensaje: 'El servicio de base de datos no está disponible temporalmente.',
+        tip: 'Esperá unos segundos e intentá de nuevo. El servicio se recuperará pronto.'
+    },
+    'quota-exceeded': {
+        titulo: 'Límite alcanzado',
+        mensaje: 'Se alcanzó el límite de operaciones de la base de datos.',
+        tip: 'Esperá un momento antes de intentar nuevamente.'
+    },
+    // Errores de validación
+    'invalid': {
+        titulo: 'Datos incorrectos',
+        mensaje: 'Algunos datos del formulario no son válidos.',
+        tip: 'Revisá los campos marcados en rojo y corregí los errores.'
+    }
+};
+
+// Mostrar alerta de error amigable (reemplaza alert())
+function mostrarErrorAmigable(error) {
+    // Buscar mensaje amigable
+    let errorInfo = null;
+    const errorStr = error.toString().toLowerCase();
+
+    for (const [key, value] of Object.entries(ERRORES_AMIGABLES)) {
+        if (errorStr.includes(key.toLowerCase())) {
+            errorInfo = value;
+            break;
+        }
+    }
+
+    // Si no encontramos un mensaje específico, usar uno genérico
+    if (!errorInfo) {
+        errorInfo = {
+            titulo: 'Algo salió mal',
+            mensaje: 'Ocurrió un error inesperado al procesar tu solicitud.',
+            tip: 'Verificá que todos los campos estén completos y volvé a intentar. Si el problema persiste, reiniciá la página.'
+        };
+    }
+
+    // Crear overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'error-overlay';
+
+    // Crear alerta
+    const alert = document.createElement('div');
+    alert.className = 'error-alert';
+    alert.innerHTML = `
+        <div class="error-alert-header">
+            <span class="error-icon">⚠️</span>
+            <h3>${errorInfo.titulo}</h3>
+        </div>
+        <div class="error-alert-body">
+            <p>${errorInfo.mensaje}</p>
+            <div class="error-alert-tip">${errorInfo.tip}</div>
+        </div>
+        <div class="error-alert-footer">
+            <button class="error-alert-close">Entendido</button>
+        </div>
+    `;
+
+    // Agregar al DOM
+    document.body.appendChild(overlay);
+    document.body.appendChild(alert);
+
+    // Cerrar al hacer click
+    const cerrar = () => {
+        alert.remove();
+        overlay.remove();
+    };
+
+    alert.querySelector('.error-alert-close').addEventListener('click', cerrar);
+    overlay.addEventListener('click', cerrar);
+
+    // Cerrar con Escape
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            cerrar();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    // Log del error original para debugging
+    console.error('Error original:', error);
+}
+
+// Validaciones de campos
+const VALIDACIONES = {
+    nombreCliente: {
+        requerido: true,
+        mensaje: 'Ingresá el nombre del cliente para continuar'
+    },
+    nombreAgente: {
+        requerido: true,
+        mensaje: 'Ingresá tu nombre como agente'
+    },
+    tipoViaje: {
+        requerido: true,
+        mensaje: 'Seleccioná el tipo de viaje (ida, ida y vuelta, o multi-destino)'
+    },
+    cantidadPasajeros: {
+        requerido: true,
+        mensaje: 'Indicá cuántos pasajeros viajan',
+        validar: (valor) => {
+            const num = parseInt(valor);
+            if (isNaN(num) || num < 1) {
+                return 'La cantidad de pasajeros debe ser al menos 1';
+            }
+            return null;
+        }
+    },
+    valorPorPersona: {
+        requerido: true,
+        mensaje: 'Ingresá el valor por persona del presupuesto',
+        validar: (valor) => {
+            const num = parseFloat(valor);
+            if (isNaN(num) || num <= 0) {
+                return 'El valor debe ser mayor a 0';
+            }
+            return null;
+        }
+    }
+};
+
+// Mostrar error en un campo específico
+function mostrarErrorCampo(inputId, mensaje) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const formGroup = input.closest('.form-group');
+    if (!formGroup) return;
+
+    // Agregar clase de error
+    formGroup.classList.add('has-error');
+
+    // Buscar o crear mensaje de error
+    let errorMsg = formGroup.querySelector('.error-message');
+    if (!errorMsg) {
+        errorMsg = document.createElement('div');
+        errorMsg.className = 'error-message';
+        formGroup.appendChild(errorMsg);
+    }
+
+    errorMsg.textContent = mensaje;
+
+    // Hacer scroll al primer error
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus();
+}
+
+// Limpiar error de un campo
+function limpiarErrorCampo(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const formGroup = input.closest('.form-group');
+    if (!formGroup) return;
+
+    formGroup.classList.remove('has-error');
+}
+
+// Limpiar todos los errores
+function limpiarTodosLosErrores() {
+    document.querySelectorAll('.form-group.has-error').forEach(group => {
+        group.classList.remove('has-error');
+    });
+}
+
+// Validar formulario completo
+function validarFormulario() {
+    limpiarTodosLosErrores();
+
+    let primerError = null;
+
+    for (const [campo, config] of Object.entries(VALIDACIONES)) {
+        const input = document.getElementById(campo);
+        if (!input) continue;
+
+        const valor = input.value.trim();
+
+        // Validar campo requerido
+        if (config.requerido && !valor) {
+            if (!primerError) primerError = { campo, mensaje: config.mensaje };
+            mostrarErrorCampo(campo, config.mensaje);
+            continue;
+        }
+
+        // Validación personalizada
+        if (config.validar && valor) {
+            const error = config.validar(valor);
+            if (error) {
+                if (!primerError) primerError = { campo, mensaje: error };
+                mostrarErrorCampo(campo, error);
+            }
+        }
+    }
+
+    // Validaciones adicionales
+
+    // Verificar que haya al menos un vuelo con datos
+    const tipoViaje = document.getElementById('tipoViaje').value;
+    if (tipoViaje) {
+        const vuelos = document.querySelectorAll('.vuelo-item');
+        let tieneVueloValido = false;
+
+        vuelos.forEach(vuelo => {
+            const origen = vuelo.querySelector('.vuelo-origen')?.value;
+            const destino = vuelo.querySelector('.vuelo-destino')?.value;
+            if (origen && destino) tieneVueloValido = true;
+        });
+
+        if (!tieneVueloValido && vuelos.length > 0) {
+            showToast('Completá al menos un vuelo con origen y destino', 'error');
+            if (!primerError) {
+                primerError = { campo: 'vuelos', mensaje: 'Completar vuelos' };
+            }
+        }
+    }
+
+    return primerError === null;
+}
+
+// Agregar listeners para limpiar errores cuando el usuario escribe
+function inicializarValidacionEnTiempoReal() {
+    for (const campo of Object.keys(VALIDACIONES)) {
+        const input = document.getElementById(campo);
+        if (input) {
+            input.addEventListener('input', () => limpiarErrorCampo(campo));
+            input.addEventListener('change', () => limpiarErrorCampo(campo));
+        }
+    }
+}
+
+// Inicializar validación cuando carga la página
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(inicializarValidacionEnTiempoReal, 500);
+});
