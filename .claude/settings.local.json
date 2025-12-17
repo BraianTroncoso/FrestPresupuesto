@@ -9,7 +9,17 @@
       "Bash(npm uninstall:*)",
       "Bash(npm install:*)",
       "Bash(npx vercel link:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(npx vercel env add:*)",
+      "Bash(npx vercel:*)",
+      "Bash(node scripts/seed-users.js:*)",
+      "Bash(git config:*)",
+      "Bash(GIT_AUTHOR_EMAIL=\"\" GIT_COMMITTER_EMAIL=\"\" npx vercel --prod)",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
