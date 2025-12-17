@@ -58,12 +58,47 @@ header h1 {
 }
 
 /* Switch de idioma */
-.idioma-switch {
+/* Header actions container */
+.header-actions {
     position: absolute;
     top: 15px;
     right: 15px;
     display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.idioma-switch {
+    display: flex;
     gap: 5px;
+}
+
+/* Botón logout */
+.btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+}
+
+.btn-logout #usuarioNombre {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .idioma-switch .bandera {

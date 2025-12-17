@@ -1,318 +1,724 @@
-# Contexto del Proyecto - Freest Travel
+# FrestPresupuesto - Documentacion Completa
 
-## Descripción
-Sistema de presupuestos de viaje para la agencia Freest Travel. Genera presupuestos en PDF y Excel con historial en Firebase.
+> Sistema de presupuestos de viaje para Freest Travel
+> Ultima actualizacion: 16 de Diciembre 2025
 
-## Stack
-- HTML/CSS/JavaScript vanilla
-- Node.js + Express (servidor)
-- Puppeteer (PDF de alta calidad)
-- jsPDF (fallback PDF)
-- SheetJS para exportar Excel
-- Firebase Firestore (historial de presupuestos)
-- AeroDataBox API (RapidAPI) para buscar vuelos
+---
 
-## Estructura de Archivos
+## Resumen Ejecutivo
+
+Sistema web para generar presupuestos de viajes con:
+- **Frontend**: HTML/CSS/JavaScript vanilla
+- **Backend**: Vercel Serverless Functions (Node.js)
+- **Base de datos**: Turso (SQLite distribuido)
+- **Autenticacion**: Sistema propio con sesiones
+- **PDFs**: jsPDF (generacion en cliente)
+
+---
+
+## Credenciales de Acceso
+
+### Ambiente de Desarrollo/Produccion
+
+| Rol | Email | Password | Permisos |
+|-----|-------|----------|----------|
+| **Admin** | `admin@freest.com` | `admin123` | Todo: ver todos los presupuestos, gestionar usuarios |
+| **Agente** | `agente@freest.com` | `agente123` | Solo sus propios presupuestos |
+
+> **IMPORTANTE**: Cambiar contrasenas en produccion
+
+---
+
+## Arquitectura del Sistema
+
+```
++------------------------------------------------------------------+
+|                         CLIENTE (Browser)                         |
++------------------------------------------------------------------+
+|  public/                                                          |
+|  +-- index.html          -> Aplicacion principal                  |
+|  +-- login.html          -> Pagina de login                       |
+|  +-- css/styles.css      -> Estilos                               |
+|  +-- js/                                                          |
+|      +-- app.js          -> Logica principal                      |
+|      +-- api-client.js   -> Cliente REST API                      |
+|      +-- pdf-generator.js -> Generacion de PDFs (jsPDF)           |
+|      +-- traducciones.js -> i18n (ES/PT)                          |
+|      +-- ...                                                      |
++------------------------------------------------------------------+
+                              |
+                              | HTTPS (REST API)
+                              v
++------------------------------------------------------------------+
+|                    VERCEL SERVERLESS FUNCTIONS                    |
++------------------------------------------------------------------+
+|  api/                                                             |
+|  +-- auth/                                                        |
+|  |   +-- login.js        -> POST /api/auth/login                  |
+|  |   +-- logout.js       -> POST /api/auth/logout                 |
+|  |   +-- me.js           -> GET /api/auth/me                      |
+|  +-- presupuestos/                                                |
+|  |   +-- index.js        -> GET /api/presupuestos                 |
+|  |   +-- [id].js         -> GET/PUT/DELETE /api/presupuestos/:id  |
+|  |   +-- create.js       -> POST /api/presupuestos/create         |
+|  |   +-- duplicate.js    -> POST /api/presupuestos/duplicate      |
+|  |   +-- next-number.js  -> GET /api/presupuestos/next-number     |
+|  +-- usuarios/                                                    |
+|      +-- index.js        -> GET /api/usuarios                     |
+|      +-- [id].js         -> GET/PUT/DELETE /api/usuarios/:id      |
+|      +-- create.js       -> POST /api/usuarios/create             |
++------------------------------------------------------------------+
+|  lib/                                                             |
+|  +-- db.js               -> Cliente Turso + CRUD                  |
+|  +-- auth.js             -> Autenticacion + Middleware            |
++------------------------------------------------------------------+
+                              |
+                              | libsql (HTTPS)
+                              v
++------------------------------------------------------------------+
+|                      TURSO (SQLite Distribuido)                   |
++------------------------------------------------------------------+
+|  URL: libsql://freest-presupuestos-braiantroncoso.aws-us-east-1   |
+|                                                                   |
+|  Tablas:                                                          |
+|  +-- usuarios            -> Usuarios del sistema                  |
+|  +-- sesiones            -> Tokens de sesion activos              |
+|  +-- presupuestos        -> Datos principales de presupuestos     |
+|  +-- vuelos              -> Vuelos asociados (1:N)                |
+|  +-- hoteles             -> Hoteles asociados (1:N)               |
+|  +-- configuracion       -> Settings globales (clave/valor)       |
++------------------------------------------------------------------+
+```
+
+---
+
+## Estructura de Carpetas
+
 ```
 FrestPresupuesto/
-├── index.html              # Formulario principal
-├── server.js               # Servidor Express + endpoint PDF
-├── config.js               # Configuración (API keys, Firebase) - EN .gitignore
-├── config.example.js       # Template de configuración
-├── package.json            # Dependencias Node
-├── css/
-│   └── styles.css          # Estilos del formulario + validación
-├── js/
-│   ├── app.js              # Lógica del formulario + validación
-│   ├── flights.js          # Búsqueda de vuelos (API)
-│   ├── firebase-db.js      # CRUD Firebase
-│   ├── pdf-export.js       # Exportación PDF (jsPDF fallback)
-│   ├── pdf-puppeteer.js    # Exportación PDF (Puppeteer - alta calidad)
-│   └── excel-export.js     # Exportación a Excel
-├── assets/
-│   ├── Logo.png            # Logo Freest Travel
-│   ├── Usuario.png         # Icono usuario para PDF
-│   ├── Cotizacion.png      # Icono cotización
-│   ├── Plazo.png           # Icono plazo
-│   └── image-to-test.jpg   # Imagen de prueba para hoteles
-└── tests/
-    └── generar_pdf.js      # Script para generar PDF de prueba
++-- .env                      # Variables de entorno (NO commitear)
++-- .vercel/                  # Configuracion local de Vercel
++-- vercel.json               # Configuracion de Vercel
++-- package.json              # Dependencias y scripts
+|
++-- api/                      # Serverless Functions
+|   +-- auth/
+|   |   +-- login.js          # Iniciar sesion
+|   |   +-- logout.js         # Cerrar sesion
+|   |   +-- me.js             # Obtener usuario actual
+|   +-- presupuestos/
+|   |   +-- index.js          # Listar presupuestos
+|   |   +-- [id].js           # CRUD por ID
+|   |   +-- create.js         # Crear presupuesto
+|   |   +-- duplicate.js      # Duplicar presupuesto
+|   |   +-- next-number.js    # Siguiente numero
+|   +-- usuarios/
+|       +-- index.js          # Listar usuarios (admin)
+|       +-- [id].js           # CRUD por ID (admin)
+|       +-- create.js         # Crear usuario (admin)
+|
++-- lib/                      # Librerias compartidas
+|   +-- db.js                 # Cliente Turso + funciones CRUD
+|   +-- auth.js               # Sistema de autenticacion
+|
++-- public/                   # Archivos estaticos
+|   +-- index.html            # Aplicacion principal
+|   +-- login.html            # Pagina de login
+|   +-- css/
+|   |   +-- styles.css        # Estilos
+|   +-- js/
+|   |   +-- app.js            # Logica principal
+|   |   +-- api-client.js     # Cliente API REST
+|   |   +-- pdf-generator.js  # Generador PDF (jsPDF)
+|   |   +-- traducciones.js   # Diccionario ES/PT
+|   |   +-- form-handlers.js  # Manejo de formularios
+|   |   +-- ui-helpers.js     # Utilidades UI
+|   +-- assets/
+|       +-- Logo.png          # Logo Freest
+|       +-- Usuario.png       # Icono usuario
+|       +-- ...               # Otros assets
+|
++-- scripts/                  # Scripts de utilidad
+    +-- setup-database.js     # Crear tablas en Turso
+    +-- seed-users.js         # Crear usuarios iniciales
 ```
 
-## Instalación
-```bash
-npm install
-npx puppeteer browsers install chrome  # IMPORTANTE
-cp config.example.js config.js          # Completar con API keys
-node server.js                          # http://localhost:3000
+---
+
+## Base de Datos (Turso)
+
+### Conexion
+
+```javascript
+// lib/db.js
+import { createClient } from '@libsql/client';
+
+const db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN
+});
 ```
+
+### Variables de Entorno (.env)
+
+```env
+TURSO_DATABASE_URL=libsql://freest-presupuestos-braiantroncoso.aws-us-east-1.turso.io
+TURSO_AUTH_TOKEN=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
+```
+
+### Esquema de Tablas
+
+#### usuarios
+```sql
+CREATE TABLE usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+    rol TEXT DEFAULT 'agente',        -- 'admin' | 'agente'
+    telefono TEXT DEFAULT '',
+    cadastur TEXT DEFAULT '',
+    activo INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### sesiones
+```sql
+CREATE TABLE sesiones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER NOT NULL,
+    token TEXT UNIQUE NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+```
+
+#### presupuestos
+```sql
+CREATE TABLE presupuestos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    numero TEXT NOT NULL,
+    fecha TEXT,
+    tipo_viaje TEXT DEFAULT 'idaVuelta',
+    tipo_tarifa TEXT,
+
+    -- Agente
+    agente_id INTEGER,
+    agente_nombre TEXT,
+    agente_email TEXT,
+    agente_telefono TEXT,
+    agente_cadastur TEXT,
+
+    -- Cliente
+    cliente_nombre TEXT,
+    cliente_telefono TEXT,
+    cliente_ciudad TEXT,
+    destino_final TEXT,
+    cantidad_pasajeros INTEGER DEFAULT 1,
+
+    -- Servicios incluidos
+    incluye_transfer INTEGER DEFAULT 0,
+    incluye_seguro INTEGER DEFAULT 0,
+    incluye_vehiculo INTEGER DEFAULT 0,
+
+    -- Valores
+    moneda TEXT DEFAULT 'USD',
+    valor_por_persona REAL DEFAULT 0,
+    valor_total REAL DEFAULT 0,
+
+    -- Metadata
+    idioma TEXT DEFAULT 'es',
+    estado TEXT DEFAULT 'activo',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    deleted_at DATETIME,
+
+    FOREIGN KEY (agente_id) REFERENCES usuarios(id)
+);
+```
+
+#### vuelos
+```sql
+CREATE TABLE vuelos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    presupuesto_id INTEGER NOT NULL,
+    orden INTEGER DEFAULT 0,
+    tipo TEXT DEFAULT 'ida',          -- 'ida' | 'vuelta'
+    numero TEXT,
+    origen TEXT,
+    destino TEXT,
+    fecha TEXT,
+    hora_salida TEXT,
+    hora_llegada TEXT,
+    aerolinea TEXT,
+    duracion TEXT,
+    escalas TEXT DEFAULT 'Directo',
+    FOREIGN KEY (presupuesto_id) REFERENCES presupuestos(id)
+);
+```
+
+#### hoteles
+```sql
+CREATE TABLE hoteles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    presupuesto_id INTEGER NOT NULL,
+    orden INTEGER DEFAULT 0,
+    nombre TEXT,
+    url TEXT,
+    tipo_cuarto TEXT,
+    fecha_entrada TEXT,
+    fecha_salida TEXT,
+    noches INTEGER DEFAULT 0,
+    regimen TEXT,
+    imagen_base64 TEXT,
+    FOREIGN KEY (presupuesto_id) REFERENCES presupuestos(id)
+);
+```
+
+#### configuracion
+```sql
+CREATE TABLE configuracion (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clave TEXT UNIQUE NOT NULL,
+    valor TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Valor inicial
+INSERT INTO configuracion (clave, valor) VALUES ('ultimo_numero_presupuesto', '0');
+```
+
+---
+
+## API Endpoints
+
+### Autenticacion
+
+| Metodo | Endpoint | Descripcion | Body |
+|--------|----------|-------------|------|
+| POST | `/api/auth/login` | Iniciar sesion | `{email, password}` |
+| POST | `/api/auth/logout` | Cerrar sesion | - |
+| GET | `/api/auth/me` | Usuario actual | - |
+
+#### Ejemplo Login
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@freest.com","password":"admin123"}'
+
+# Response
+{
+  "success": true,
+  "usuario": {
+    "id": 1,
+    "email": "admin@freest.com",
+    "nombre": "Administrador",
+    "rol": "admin",
+    "telefono": "(11) 99999-9999",
+    "cadastur": "37.286.620/0001-49"
+  }
+}
+```
+
+### Presupuestos
+
+| Metodo | Endpoint | Descripcion | Permisos |
+|--------|----------|-------------|----------|
+| GET | `/api/presupuestos` | Listar | Admin: todos, Agente: propios |
+| GET | `/api/presupuestos/[id]` | Obtener uno | Admin: cualquiera, Agente: propios |
+| POST | `/api/presupuestos/create` | Crear | Todos |
+| PUT | `/api/presupuestos/[id]` | Actualizar | Admin: cualquiera, Agente: propios |
+| DELETE | `/api/presupuestos/[id]` | Eliminar (soft) | Admin: cualquiera, Agente: propios |
+| POST | `/api/presupuestos/duplicate` | Duplicar | Admin: cualquiera, Agente: propios |
+| GET | `/api/presupuestos/next-number` | Siguiente numero | Todos |
+
+### Usuarios (Solo Admin)
+
+| Metodo | Endpoint | Descripcion |
+|--------|----------|-------------|
+| GET | `/api/usuarios` | Listar todos |
+| GET | `/api/usuarios/[id]` | Obtener uno |
+| POST | `/api/usuarios/create` | Crear usuario |
+| PUT | `/api/usuarios/[id]` | Actualizar |
+| DELETE | `/api/usuarios/[id]` | Desactivar |
+
+---
+
+## Sistema de Autenticacion
+
+### Flujo de Login
+
+```
+1. Usuario envia email/password -> POST /api/auth/login
+2. Backend verifica credenciales contra DB
+3. Si valido:
+   - Crea token con nanoid(32)
+   - Guarda sesion en tabla 'sesiones' (expira en 7 dias)
+   - Setea cookie httpOnly 'auth_token'
+   - Retorna datos del usuario
+4. Frontend guarda usuario en sessionStorage
+5. Redirige a index.html
+```
+
+### Middleware de Proteccion (lib/auth.js)
+
+```javascript
+export async function withAuth(req, requiredRole = null) {
+    const token = getTokenFromRequest(req);
+    const usuario = await verificarSesion(token);
+
+    if (!usuario) {
+        return { authenticated: false, error: 'No autenticado' };
+    }
+
+    if (requiredRole && usuario.rol !== requiredRole && usuario.rol !== 'admin') {
+        return { authenticated: false, error: 'Sin permisos suficientes' };
+    }
+
+    return { authenticated: true, usuario };
+}
+```
+
+### Permisos por Rol
+
+| Accion | Admin | Agente |
+|--------|:-----:|:------:|
+| Ver todos los presupuestos | SI | NO |
+| Ver presupuestos propios | SI | SI |
+| Crear presupuesto | SI | SI |
+| Editar cualquier presupuesto | SI | NO |
+| Editar presupuesto propio | SI | SI |
+| Eliminar cualquier presupuesto | SI | NO |
+| Eliminar presupuesto propio | SI | SI |
+| Gestionar usuarios | SI | NO |
+
+---
+
+## Dependencias
+
+### package.json
+
+```json
+{
+  "name": "freest-presupuesto",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "db:setup": "node scripts/setup-database.js",
+    "db:seed": "node scripts/seed-users.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "nanoid": "^5.0.9"
+  },
+  "devDependencies": {
+    "vercel": "^50.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```
+
+---
+
+## Comandos Utiles
+
+### Desarrollo Local
+
+```bash
+# Instalar dependencias
+npm install
+
+# Configurar base de datos (crear tablas)
+npm run db:setup
+
+# Crear usuarios iniciales
+npm run db:seed
+
+# Iniciar servidor de desarrollo
+npx vercel dev
+
+# Servidor disponible en http://localhost:3000
+```
+
+### Turso CLI
+
+```bash
+# Login (en WSL usar --headless)
+turso auth login --headless
+
+# Crear base de datos
+turso db create freest-presupuestos
+
+# Obtener URL
+turso db show freest-presupuestos --url
+
+# Crear token
+turso db tokens create freest-presupuestos
+
+# Shell SQL
+turso db shell freest-presupuestos
+```
+
+### Vercel CLI
+
+```bash
+# Login
+npx vercel login
+
+# Vincular proyecto
+npx vercel link --yes --project freest-presupuesto
+
+# Desarrollo local
+npx vercel dev
+
+# Deploy a produccion
+npx vercel --prod
+
+# Variables de entorno
+npx vercel env add TURSO_DATABASE_URL
+npx vercel env add TURSO_AUTH_TOKEN
+```
+
+---
+
+## Configuracion de Vercel
+
+### vercel.json
+
+```json
+{
+  "version": 2,
+  "name": "freest-presupuesto",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/login", "destination": "/login.html" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type,Authorization" }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## Generacion de PDFs
+
+El sistema usa **jsPDF** para generar PDFs en el cliente (navegador).
+
+### Archivo: `public/js/pdf-generator.js`
+
+- Carga imagenes como base64
+- Soporta traducciones ES/PT
+- Genera layout similar al diseno original
+
+### Secciones del PDF
+
+1. Barra azul superior
+2. Header con logo + datos del agente
+3. Barra de destino (naranja/azul con diagonal)
+4. Datos del cliente (2 columnas)
+5. Informacion de vuelos con icono direccional
+6. Hoteles con imagen
+7. Seccion "Mas informacion" (transfer, seguro, vehiculo)
+8. Caja de valores (naranja)
+9. Barra azul inferior
+
+---
+
+## Flujo de la Aplicacion
+
+### 1. Login
+
+```
+Usuario -> login.html -> POST /api/auth/login -> Cookie + Redirect -> index.html
+```
+
+### 2. Cargar Presupuestos
+
+```
+index.html -> GET /api/auth/me -> Verificar sesion
+           -> GET /api/presupuestos -> Listar segun rol
+```
+
+### 3. Crear Presupuesto
+
+```
+Formulario -> POST /api/presupuestos/create -> Guardar en Turso -> Actualizar lista
+```
+
+### 4. Generar PDF
+
+```
+Datos del formulario -> pdf-generator.js -> jsPDF -> Descargar PDF
+```
+
+---
 
 ## Paleta de Colores
-- **Naranja principal:** #ed6e1a
-- **Azul:** #435c91
-- **Texto primario:** #1e293b
-- **Texto secundario:** #64748b
-- **Borde:** #e2e8f0
-- **Fondo claro:** #f4f4f4
-- **Danger (errores):** #ef4444
 
-## Sistema de Validación (Nuevo)
+| Color | Hex | Uso |
+|-------|-----|-----|
+| Naranja principal | `#ed6e1a` | Botones, acentos, barra destino |
+| Azul | `#435c91` | Header, footer, enlaces |
+| Texto primario | `#1e293b` | Texto principal |
+| Texto secundario | `#64748b` | Labels, texto secundario |
+| Borde | `#e2e8f0` | Bordes de inputs |
+| Fondo claro | `#f4f4f4` | Background |
+| Danger | `#ef4444` | Errores |
 
-### Mensajes de Error Amigables
-En `app.js` hay un diccionario `ERRORES_AMIGABLES` que traduce errores técnicos a mensajes para usuarios no técnicos:
-- `Failed to fetch` → "Sin conexión al servidor"
-- `413 Payload Too Large` → "Imagen demasiado grande"
-- `Unexpected end of JSON` → "Respuesta incompleta del servidor"
-- Errores de Firebase (permission-denied, unavailable, quota-exceeded)
+---
 
-### Función mostrarErrorAmigable()
-Reemplaza `alert()` con un modal bonito que tiene:
-- Título del error
-- Mensaje descriptivo
-- Tip de ayuda para el usuario
+## Sistema de Idiomas (Multi-idioma)
 
-### Validación de Campos
-- Nombre cliente (requerido)
-- Nombre agente (requerido)
-- Tipo de viaje (requerido)
-- Cantidad pasajeros (>= 1)
-- Valor por persona (> 0)
+### Switch de Banderas
+- Ubicacion: Header del formulario (esquina superior derecha)
+- Banderas: AR (Espanol - default) | BR (Portugues)
+- Persiste en `localStorage` con clave `idioma`
 
-Los campos con error se marcan con borde rojo y mensaje debajo.
+### Elementos Traducidos
+| Elemento | Espanol | Portugues |
+|----------|---------|-----------|
+| Header agente | Telefono, Email | Telefone, E-mail |
+| Datos cliente | Nombre, Ciudad, Fecha, Telefono | Nome, Cidade, Data, Telefone |
+| Secciones | Trechos aereos, Hospedaje, Mas informacion | Trechos aereos, Hospedagem, Mais informacoes |
+| Hotel | Cuarto, Salida, Regimen | Quarto, Saida, Regime |
+| Regimen | Media Pension, Desayuno | Meia Pensao, Cafe da Manha |
+| Servicios | Seguro de Viaje, Alquiler de Vehiculo | Seguro Viagem, Aluguel de Veiculo |
+| Valores | VALOR POR PERSONA | VALOR POR PESSOA |
+| Fechas | "al" | "a" |
+| Vuelos | Directo | Direto |
+
+---
 
 ## Sistema de Vuelos
 
 ### Tipos de Viaje
 | Tipo | Comportamiento |
 |------|----------------|
-| **Solo ida** | Sección "Vuelos de Ida" + botón "+ Agregar Ida" |
+| **Solo ida** | Seccion "Vuelos de Ida" + boton "+ Agregar Ida" |
 | **Ida y vuelta** | 2 secciones separadas: "Ida" y "Vuelta" con botones |
-| **Multi-destino** | Sección única + selector Ida/Vuelta en cada vuelo |
+| **Multi-destino** | Seccion unica + selector Ida/Vuelta en cada vuelo |
 
-### Tipo de Tarifa (Nuevo)
-Select en "Datos del Presupuesto" después de tipo de viaje:
+### Tipo de Tarifa
 - **Basic** - Solo mochila
 - **Light** - Mochila + Carry on
 - **Full** - Mochila + Carry on + Valija 23kg
 
-Se muestra en el PDF arriba de los vuelos de forma sutil.
+### Visualizacion en PDF
+- **IDA**: `COR 11:00 ->  BUZ 14:35` (origen + horaSalida izq, destino + horaLlegada der)
+- **VUELTA**: `COR 21:30 <-  BUZ 16:00` (destino + horaLlegada izq, origen + horaSalida der)
 
-### Visualización en PDF
-- **IDA**: `COR 11:00 ✈→ BUZ 14:35` (origen + horaSalida izq, destino + horaLlegada der)
-- **VUELTA**: `COR 21:30 ←✈ BUZ 16:00` (destino + horaLlegada izq, origen + horaSalida der)
+### Indicador +1 (dia siguiente)
+Cuando un vuelo llega al dia siguiente (horaLlegada < horaSalida), se muestra `+1` en naranja.
 
-Para vuelta se invierten CÓDIGOS y HORAS para que el flujo visual tenga sentido.
+---
 
-### Indicador +1 (día siguiente)
-Cuando un vuelo llega al día siguiente (horaLlegada < horaSalida), se muestra `+1` en naranja.
+## Hospedaje
 
-### Escalas
-- Si es **Directo**: muestra "Directo" en naranja
-- Si tiene **escalas**: NO muestra nada (se oculta)
-
-### Lógica en pdf-puppeteer.js
-```javascript
-const esIda = vuelo.tipo === 'ida' || !vuelo.tipo;
-const izqCodigo = esIda ? vuelo.origen : vuelo.destino;
-const izqHora = esIda ? vuelo.horaSalida : vuelo.horaLlegada;
-const derCodigo = esIda ? vuelo.destino : vuelo.origen;
-const derHora = esIda ? vuelo.horaLlegada : vuelo.horaSalida;
-
-// Escalas: solo mostrar "Directo"
-${(!vuelo.escalas || vuelo.escalas.toLowerCase() === 'directo') ? 'Directo' : ''}
-```
-
-## Barra Destino en PDF
-- 60% naranja + 40% azul con diagonal blanca (usando `skewX(-15deg)`)
-- **Origen**: `primerVuelo.origen`
-- **Destino**: `cliente.destinoFinal` o fallback a `ultimoVuelo.destino`
-
-## Datos del Cliente en PDF
-- Grid de 2 columnas
-- Columna derecha (Ciudad, Teléfono) alineada a la derecha
-- Formato fecha: DD/MM/YYYY (es-AR)
-
-## Fechas de Vuelo
-- Si es **solo ida** (misma fecha inicio y fin): muestra solo una fecha
-- Si es **ida y vuelta**: muestra rango "03/12/2025 al 10/12/2025" (o "a" en portugués)
-
-## Sistema de Idiomas (Multi-idioma)
-
-### Switch de Banderas
-- Ubicación: Header del formulario (esquina superior derecha)
-- Banderas: 🇦🇷 (Español - default) | 🇧🇷 (Portugués)
-- Persiste en `localStorage` con clave `idioma`
-
-### Implementación en Formulario (app.js)
-```javascript
-let idiomaActual = localStorage.getItem('idioma') || 'es';
-
-const TRADUCCIONES = {
-    es: { presupuesto: 'Presupuesto', deViaje: 'de Viaje', ... },
-    pt: { presupuesto: 'Orçamento', deViaje: 'de Viagem', ... }
-};
-
-function cambiarIdioma(idioma) {
-    idiomaActual = idioma;
-    localStorage.setItem('idioma', idioma);
-    // Actualiza UI con data-i18n attributes
-}
-```
-
-### Implementación en PDF (pdf-puppeteer.js)
-```javascript
-const TRADUCCIONES_PDF = {
-    es: {
-        datosCliente: 'Datos del cliente',
-        nombre: 'Nombre', ciudad: 'Ciudad', fecha: 'Fecha', telefono: 'Teléfono',
-        agente: 'Agente', email: 'Email', al: 'al',
-        trechosAereos: 'Trechos aéreos', hospedaje: 'Hospedaje',
-        hotel: 'Hotel', cuarto: 'Cuarto', entrada: 'Entrada', salida: 'Salida', regimen: 'Regimen',
-        masInfo: 'Más información', cotizacion: 'Cotización', plazo: 'Plazo de la propuesta',
-        valorPorPersona: 'VALOR POR PERSONA', valorTotal: 'VALOR TOTAL',
-        adulto: 'adulto', adultos: 'adultos',
-        transfer: 'Transfer', seguroViaje: 'Seguro de Viaje', alquilerVehiculo: 'Alquiler de Vehículo',
-        directo: 'Directo',
-        mediaPension: 'Media Pensión', pensionCompleta: 'Pensión Completa', ...
-    },
-    pt: {
-        datosCliente: 'Dados do cliente',
-        nombre: 'Nome', ciudad: 'Cidade', fecha: 'Data', telefono: 'Telefone',
-        agente: 'Agente', email: 'E-mail', al: 'a',
-        trechosAereos: 'Trechos aéreos', hospedaje: 'Hospedagem',
-        hotel: 'Hotel', cuarto: 'Quarto', entrada: 'Entrada', salida: 'Saída', regimen: 'Regime',
-        masInfo: 'Mais informações', cotizacion: 'Cotação', plazo: 'Prazo da proposta',
-        valorPorPersona: 'VALOR POR PESSOA', valorTotal: 'VALOR TOTAL',
-        adulto: 'adulto', adultos: 'adultos',
-        transfer: 'Transfer', seguroViaje: 'Seguro Viagem', alquilerVehiculo: 'Aluguel de Veículo',
-        directo: 'Direto',
-        mediaPension: 'Meia Pensão', pensionCompleta: 'Pensão Completa', ...
-    }
-};
-
-const idioma = datos.idioma || 'es';
-const t = TRADUCCIONES_PDF[idioma];
-```
-
-### Tarifa Traducida
-```javascript
-formatearTarifa(tarifa, idioma) // Devuelve { nombre, descripcion } según idioma
-// 'light' → { nombre: 'LIGHT', descripcion: 'Mochila + Bagagem de mão' } (pt)
-```
-
-### Elementos Traducidos
-| Elemento | Español | Portugués |
-|----------|---------|-----------|
-| Header agente | Teléfono, Email | Telefone, E-mail |
-| Datos cliente | Nombre, Ciudad, Fecha, Teléfono | Nome, Cidade, Data, Telefone |
-| Secciones | Trechos aéreos, Hospedaje, Más información | Trechos aéreos, Hospedagem, Mais informações |
-| Hotel | Cuarto, Salida, Regimen | Quarto, Saída, Regime |
-| Regimen | Media Pensión, Desayuno | Meia Pensão, Café da Manhã |
-| Servicios | Seguro de Viaje, Alquiler de Vehículo | Seguro Viagem, Aluguel de Veículo |
-| Valores | VALOR POR PERSONA | VALOR POR PESSOA |
-| Fechas | "al" | "a" |
-| Vuelos | Directo | Direto |
-
-## Hospedaje en PDF
-
-### Múltiples Hoteles
-- Se muestran en **columnas** (2 por fila)
+### Multiples Hoteles
+- Se muestran en columnas (2 por fila)
 - Si hay 1 solo hotel, ocupa todo el ancho
-- Contenedor `.hoteles-container` con flexbox
 
 ### Datos del Hotel
 - **Nombre**: clickeable si tiene URL (color azul #435c91)
 - **Cuarto**: capitalizado
 - **Entrada/Salida**: formato DD/MM/YYYY
-- **Regimen**: formateado (mediaPension → "Media Pensión")
-
-### Función formatearRegimen()
-```javascript
-const mapeo = {
-    'mediaPension': 'Media Pensión',
-    'pensionCompleta': 'Pensión Completa',
-    'todoIncluido': 'Todo Incluido',
-    'soloAlojamiento': 'Solo Alojamiento',
-    'desayuno': 'Desayuno'
-};
-```
+- **Regimen**: formateado (mediaPension -> "Media Pension")
 
 ### Imagen del Hotel
 - Input file convierte a base64
 - Se guarda en `dataset.base64`
-- Se muestra con `object-fit: cover` (40mm x 28mm cuando hay múltiples)
+- Se muestra con `object-fit: cover`
+
+---
 
 ## Servicios Incluidos
+
 Toggle Si/No, se muestran en barra destino:
 - Transfer
 - Seguro de Viaje
-- Alquiler de Vehículo
+- Alquiler de Vehiculo
 
-## Estructura del PDF
-1. **Barra azul top** - full width, 4mm alto
-2. **Header** - logo izquierda, datos agente derecha
-3. **Barra destino** - 60% naranja + 40% azul con diagonal blanca (skewX)
-4. **Datos del cliente** - icono usuario + grid 2 columnas
-5. **Trechos aéreos** - tarifa + vuelos con avión direccional
-6. **Hospedaje** - hoteles en columnas con imagen y link
-7. **Más información** - iconos Cotización y Plazo
-8. **Valores** - caja naranja posicionada 24mm desde el fondo
-9. **Barra azul bottom** - full width, 5mm alto
+---
 
-## Firebase
-- Colección: `presupuestos`
-- Operaciones: guardar, actualizar, obtener, eliminar (soft delete), duplicar
-- Modal de historial con búsqueda por cliente
+## Notas de Seguridad
 
-## Campos del Formulario
-- **Agente**: nombre, email (readonly), cadastur (readonly), teléfono
-- **Cliente**: nombre, teléfono, ciudad, destinoFinal, cantidadPasajeros
-- **Presupuesto**: número (autoincremental), fecha, tipoViaje, **tipoTarifa**
-- **Vuelos**: tipo, número, origen, destino, fecha, horaSalida, horaLlegada, aerolínea, duración, escalas
-- **Hoteles**: nombre, url, tipoCuarto, fechaEntrada, fechaSalida, noches, regimen, imagen
-- **Toggles**: incluyeTransfer, incluyeSeguro, incluyeVehiculo
-- **Valores**: moneda (USD/BRL), valorPorPersona, valorTotal (auto-calculado)
+- Las contrasenas se hashean con **bcryptjs** (10 rounds)
+- Los tokens de sesion usan **nanoid** (32 caracteres)
+- Las cookies son **httpOnly** (no accesibles desde JS)
+- Sesiones expiran en **7 dias**
+- Soft delete para presupuestos (estado = 'eliminado')
 
-## Servidor Express
-- Puerto: 3000
-- Límite payload: 50mb (para imágenes base64)
-- Endpoints:
-  - `POST /api/generar-pdf` - Genera PDF con datos del formulario
-  - `GET /api/test-pdf` - Test con datos de Fortaleza (4 vuelos ida/vuelta)
-  - `GET /api/test-pdf-2` - Test con datos de Porto Seguro
-  - `GET /api/test-pdf-3` - Test con datos de San Andrés (vuelo +1)
-  - `GET /api/test-pdf-4` - Test completo: ida/vuelta, tarifa, 2 hoteles, imagen
+---
 
-## Nota WSL/Windows
-Si editás archivos desde WSL y el servidor corre en Windows, puede haber problemas de sincronización. Para forzar:
-```powershell
-(Get-Content .\archivo.js) | Set-Content .\archivo.js
-```
+## Limitaciones del Plan Gratuito de Vercel
 
-## Estado Actual
-- ✅ Formulario completo con todos los campos
-- ✅ Sistema de vuelos flexible (ida/vuelta/multi)
-- ✅ Tipo de tarifa (Basic/Light/Full)
-- ✅ PDF con Puppeteer (alta calidad) + fallback jsPDF
-- ✅ Avión direccional según tipo de vuelo
-- ✅ Inversión visual de vuelos de vuelta (códigos Y horas)
-- ✅ Indicador +1 para vuelos que llegan al día siguiente
-- ✅ Escalas: solo muestra "Directo", oculta cuando tiene escalas
-- ✅ Imagen del hotel en PDF (base64)
-- ✅ URL del hotel clickeable (azul)
-- ✅ Múltiples hoteles en columnas
-- ✅ Formato régimen (Media Pensión, etc.)
-- ✅ Firebase para historial
-- ✅ Exportación Excel
-- ✅ Búsqueda de vuelos con AeroDataBox API
-- ✅ Sistema de validación con errores amigables
-- ✅ Diagonal blanca en barra destino (sin líneas feas)
-- ✅ **Multi-idioma (Español/Portugués)** con switch de banderas
+- Serverless functions: 10 segundos timeout
+- 100GB bandwidth/mes
+- Sin Puppeteer (limite 50MB, Chromium necesita ~300MB)
 
-## Última Actualización
-2025-11-25
-- **Sistema de idiomas (Multi-idioma)**: Switch 🇦🇷/🇧🇷 en header
-- Traducciones completas en formulario (data-i18n) y PDF (TRADUCCIONES_PDF)
-- Idioma persiste en localStorage
-- Tarifa traducida (Basic/Light/Full con descripciones en ambos idiomas)
-- test-pdf-4 ahora genera PDF en portugués para testing
+### Por que jsPDF en lugar de Puppeteer
+
+Puppeteer requiere Chromium (~300MB) que excede el limite de Vercel Free (50MB).
+jsPDF se ejecuta en el navegador del cliente, sin costo de servidor.
+
+---
+
+## Troubleshooting
+
+### Error: "Cannot find module 'stream/web'"
+- **Causa**: Node.js muy antiguo
+- **Solucion**: Actualizar a Node.js 18+
+
+### Error: "Cannot convert undefined or null to object"
+- **Causa**: API de @libsql/client incorrecta
+- **Solucion**: Usar `db.execute(sql, args)` no `db.execute({sql, args})`
+
+### Error: "Project names must be lowercase"
+- **Causa**: Nombre de carpeta tiene mayusculas
+- **Solucion**: `npx vercel link --yes --project nombre-lowercase`
+
+### Turso login falla en WSL
+- **Causa**: No hay navegador disponible
+- **Solucion**: `turso auth login --headless`
+
+---
+
+## Proximos Pasos
+
+1. [ ] Cambiar contrasenas de produccion
+2. [ ] Configurar variables de entorno en Vercel Dashboard
+3. [ ] Deploy a produccion: `npx vercel --prod`
+4. [ ] Configurar dominio personalizado (opcional)
+5. [ ] Implementar gestion de usuarios en el frontend
+
+---
+
+## Ultima Actualizacion
+
+2025-12-16
+- **Migracion a Vercel + Turso**: Sistema completo de autenticacion con roles
+- **API REST**: Endpoints para auth, presupuestos y usuarios
+- **jsPDF**: Reemplazo de Puppeteer para generacion de PDFs
+- **Testing local**: Servidor funcionando en http://localhost:3000
+
+---
+
+*Documento generado para el proyecto FrestPresupuesto - Freest Travel*

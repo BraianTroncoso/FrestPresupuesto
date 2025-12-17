@@ -11,9 +11,14 @@
         <header>
             <img src="https://freest.com.br/wp-content/uploads/2022/06/logo-site-1-1-1024x188.png" alt="Freest Travel" class="logo">
             <h1><span class="text-primary" data-i18n="presupuesto">Presupuesto</span> <span class="text-secondary" data-i18n="deViaje">de Viaje</span></h1>
-            <div class="idioma-switch">
-                <button type="button" class="bandera active" data-idioma="es" title="Español" onclick="cambiarIdioma('es')">🇦🇷</button>
-                <button type="button" class="bandera" data-idioma="pt" title="Português" onclick="cambiarIdioma('pt')">🇧🇷</button>
+            <div class="header-actions">
+                <div class="idioma-switch">
+                    <button type="button" class="bandera active" data-idioma="es" title="Espanol" onclick="cambiarIdioma('es')">🇦🇷</button>
+                    <button type="button" class="bandera" data-idioma="pt" title="Portugues" onclick="cambiarIdioma('pt')">🇧🇷</button>
+                </div>
+                <button type="button" class="btn-logout" onclick="cerrarSesion()" title="Cerrar sesion">
+                    <span id="usuarioNombre"></span> ✕
+                </button>
             </div>
         </header>
 
@@ -360,18 +365,27 @@
     </div>
 
     <!-- Scripts -->
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+    <!-- jsPDF para generar PDFs en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="config.js"></script>
-    <script src="js/firebase-db.js"></script>
+
+    <!-- API Client (reemplaza Firebase) -->
+    <script src="js/api-client.js"></script>
     <script src="js/flights.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/pdf-export.js"></script>
+    <!-- Generador PDF mejorado (reemplaza Puppeteer) -->
+    <script src="js/pdf-generator.js"></script>
     <script src="js/excel-export.js"></script>
+
+    <!-- Verificar sesión al cargar -->
+    <script>
+        (async function() {
+            const usuario = await verificarSesion();
+            if (!usuario) {
+                window.location.href = '/login.html';
+            }
+        })();
+    </script>
 </body>
 </html>

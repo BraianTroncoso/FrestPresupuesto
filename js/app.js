@@ -144,16 +144,33 @@ function aplicarIdiomaGuardado() {
 }
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', () => {
-    initForm();
-    initFirebase();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initForm();
+    // initFirebase() ya no es necesario - usamos api-client.js
     aplicarIdiomaGuardado();
+    cargarDatosUsuario();
 });
 
+// Cargar datos del usuario logueado
+function cargarDatosUsuario() {
+    const usuario = getUsuarioActual();
+    if (usuario) {
+        // Mostrar nombre en el header
+        const nombreSpan = document.getElementById('usuarioNombre');
+        if (nombreSpan) {
+            nombreSpan.textContent = usuario.nombre || usuario.email;
+        }
+
+        // Cargar datos del agente desde el usuario
+        document.getElementById('nombreAgente').value = usuario.nombre || '';
+        document.getElementById('emailAgente').value = usuario.email || '';
+        document.getElementById('telefonoAgente').value = usuario.telefono || '';
+        document.getElementById('cadastur').value = usuario.cadastur || '37.286.620/0001-49';
+    }
+}
+
 function initForm() {
-    // Cargar datos estáticos del agente
-    document.getElementById('emailAgente').value = CONFIG.AGENTE.email;
-    document.getElementById('cadastur').value = CONFIG.AGENTE.cadastur;
+    // Los datos del agente se cargan desde el usuario logueado en cargarDatosUsuario()
 
     // Fecha de presupuesto por defecto: hoy
     document.getElementById('fechaPresupuesto').valueAsDate = new Date();
