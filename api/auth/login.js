@@ -35,6 +35,10 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Error en login:', error);
-        return res.status(500).json({ error: 'Error interno del servidor' });
+        return res.status(500).json({
+            error: 'Error interno del servidor',
+            detail: error.message,
+            stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
+        });
     }
 }
