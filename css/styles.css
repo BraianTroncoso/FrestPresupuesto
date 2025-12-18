@@ -1304,6 +1304,17 @@ input[type="file"] {
     color: var(--danger-color);
 }
 
+.btn-accion.btn-dar-baja {
+    border-color: #f87171;
+    color: #dc2626;
+    background: #fef2f2;
+}
+
+.btn-accion.btn-dar-baja:hover:not(:disabled) {
+    border-color: #dc2626;
+    background: #fee2e2;
+}
+
 .btn-accion:disabled {
     opacity: 0.5;
     cursor: not-allowed;

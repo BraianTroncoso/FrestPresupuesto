@@ -4,6 +4,12 @@
   "framework": null,
   "buildCommand": null,
   "outputDirectory": "public",
+  "functions": {
+    "api/generar-pdf.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     { "source": "/login", "destination": "/login.html" }
   ],
