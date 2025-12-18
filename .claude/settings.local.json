@@ -22,7 +22,9 @@
       "Bash(git push:*)",
       "Bash(git fetch:*)",
       "Bash(grep:*)",
-      "Bash(node scripts/migrate-add-vendido.js:*)"
+      "Bash(node scripts/migrate-add-vendido.js:*)",
+      "Bash(pkill:*)",
+      "Bash(npx puppeteer browsers install:*)"
     ]
   }
 }
