@@ -1,7 +1,7 @@
 # FrestPresupuesto - Documentacion Completa
 
 > Sistema de presupuestos de viaje para Freest Travel
-> Ultima actualizacion: 16 de Diciembre 2025
+> Ultima actualizacion: 18 de Diciembre 2025
 
 ---
 
@@ -13,6 +13,14 @@ Sistema web para generar presupuestos de viajes con:
 - **Base de datos**: Turso (SQLite distribuido)
 - **Autenticacion**: Sistema propio con sesiones
 - **PDFs**: jsPDF (generacion en cliente)
+
+### URLs del Proyecto
+
+| Ambiente | URL |
+|----------|-----|
+| **Produccion** | https://freest-presupuesto.vercel.app |
+| **Repositorio** | https://github.com/BraianTroncoso/FrestPresupuesto |
+| **Rama principal** | `dev` (produccion), `main` (backup) |
 
 ---
 
@@ -701,19 +709,56 @@ jsPDF se ejecuta en el navegador del cliente, sin costo de servidor.
 
 ---
 
-## Proximos Pasos
+## Estado Actual (18 Dic 2025)
 
-1. [ ] Cambiar contrasenas de produccion
-2. [ ] Configurar variables de entorno en Vercel Dashboard
-3. [ ] Deploy a produccion: `npx vercel --prod`
-4. [ ] Configurar dominio personalizado (opcional)
-5. [ ] Implementar gestion de usuarios en el frontend
+### Completado
+- [x] Variables de entorno configuradas en Vercel (Production, Preview, Development)
+- [x] Repositorio migrado a https://github.com/BraianTroncoso/FrestPresupuesto
+- [x] Vercel conectado al nuevo repositorio
+- [x] Base de datos Turso configurada con tablas y usuarios seed
+- [x] Deploy a produccion realizado
+
+### Problema Pendiente: Login en Produccion
+
+**Sintoma**: El endpoint `/api/auth/login` retorna "Error interno del servidor"
+
+**Estado de investigacion**:
+- Localmente funciona correctamente (probado con script de debug)
+- Las variables de entorno estan configuradas en Vercel
+- El problema parece ser que Vercel no esta tomando el codigo mas reciente de GitHub
+
+**Solucion a intentar**:
+1. Desconectar y reconectar el repo en Vercel Settings → Git
+2. O hacer un nuevo deployment forzando desde el dashboard con el commit correcto
+3. Se agrego logging detallado en `api/auth/login.js` para diagnosticar (commit `ea44d78`)
+
+**Test rapido**:
+```bash
+# Debe retornar {success: true, usuario: {...}}
+curl -X POST https://freest-presupuesto.vercel.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@freest.com","password":"admin123"}'
+```
 
 ---
 
-## Ultima Actualizacion
+## Proximos Pasos
 
-2025-12-16
+1. [ ] **URGENTE**: Resolver error de login en produccion
+2. [ ] Cambiar contrasenas de produccion (admin123, agente123)
+3. [ ] Configurar dominio personalizado (opcional)
+4. [ ] Implementar gestion de usuarios en el frontend
+
+---
+
+## Historial de Actualizaciones
+
+### 2025-12-18
+- **Migracion de repositorio**: Fork eliminado, nuevo repo independiente creado
+- **Vercel**: Variables de entorno configuradas, proyecto conectado a GitHub
+- **Debug**: Agregado logging detallado en login para diagnosticar error en produccion
+
+### 2025-12-16
 - **Migracion a Vercel + Turso**: Sistema completo de autenticacion con roles
 - **API REST**: Endpoints para auth, presupuestos y usuarios
 - **jsPDF**: Reemplazo de Puppeteer para generacion de PDFs
