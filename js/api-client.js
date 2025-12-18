@@ -213,3 +213,35 @@ function esAdmin() {
     const usuario = getUsuarioActual();
     return usuario?.rol === 'admin';
 }
+
+// ==================== VENTAS (marcar vendido) ====================
+
+async function marcarVendido(id, vendido = true) {
+    try {
+        const result = await fetchAPI(`/presupuestos/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ vendido })
+        });
+        return { success: true, id: result.id, vendido: result.vendido };
+    } catch (error) {
+        console.error('Error marcando vendido:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ==================== ESTADÍSTICAS (solo admin) ====================
+
+async function obtenerEstadisticasVentas(periodo = 'todos') {
+    try {
+        const result = await fetchAPI(`/estadisticas/ventas?periodo=${periodo}`);
+        return {
+            success: true,
+            data: result.data || [],
+            totales: result.totales || {},
+            periodo: result.periodo
+        };
+    } catch (error) {
+        console.error('Error obteniendo estadísticas:', error);
+        return { success: false, error: error.message, data: [], totales: {} };
+    }
+}

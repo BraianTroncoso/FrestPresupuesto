@@ -986,3 +986,336 @@ input[type="file"] {
 .form-group.has-error label {
     color: var(--danger-color);
 }
+
+/* ==================== BOTÓN ADMIN ==================== */
+
+.btn-admin {
+    padding: 6px 14px;
+    background: rgba(255, 127, 30, 0.2);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-admin:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ==================== BOTÓN MARCAR VENDIDO ==================== */
+
+.btn-vendido {
+    background: var(--success-color) !important;
+    color: white !important;
+}
+
+.btn-vendido:hover {
+    background: #20bd5a !important;
+}
+
+.badge-vendido {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--success-color) 0%, #20bd5a 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: var(--radius);
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
+/* ==================== ADMIN LANDING ==================== */
+
+.admin-landing {
+    padding: 60px 0;
+}
+
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 30px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.admin-card-presupuesto:hover {
+    border-color: var(--primary-color);
+}
+
+.admin-card-dashboard:hover {
+    border-color: var(--secondary-color);
+}
+
+.admin-card-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.admin-card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.admin-card p {
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* ==================== DASHBOARD ==================== */
+
+.dashboard-section {
+    padding: 20px 0;
+}
+
+.btn-volver {
+    background: transparent;
+    border: 2px solid var(--border);
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-volver:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Filtro de período */
+.filtro-periodo {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filtro-periodo button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.filtro-periodo button:hover {
+    border-color: var(--secondary-color);
+}
+
+.filtro-periodo button.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+/* Tabla de estadísticas */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.stats-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.stats-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.stats-table .totales-row {
+    background: linear-gradient(135deg, #FFF5EB 0%, #FFE8D6 100%);
+    cursor: default;
+}
+
+.stats-table .totales-row:hover {
+    background: linear-gradient(135deg, #FFF5EB 0%, #FFE8D6 100%);
+}
+
+.stats-table .totales-row td {
+    border-top: 2px solid var(--primary-color);
+    font-weight: 600;
+}
+
+/* Detalle expandible */
+.detalle-agente {
+    background: #f8fafc;
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: var(--radius);
+    display: none;
+}
+
+.detalle-agente.show {
+    display: block;
+}
+
+.detalle-agente table {
+    width: 100%;
+    font-size: 0.85rem;
+}
+
+.detalle-agente th {
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Lista de usuarios */
+.usuarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.usuarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.usuario-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.usuario-item:hover {
+    border-color: var(--secondary-color);
+}
+
+.usuario-item.is-admin {
+    border-left: 4px solid var(--primary-color);
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.usuario-nombre {
+    font-weight: 600;
+}
+
+.usuario-email {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.usuario-rol {
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-admin {
+    background: var(--primary-color);
+    color: white;
+}
+
+.badge-agente {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.usuario-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-accion {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.btn-accion:hover:not(:disabled) {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.btn-accion.btn-eliminar:hover:not(:disabled) {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.btn-accion:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading y empty states */
+.loading, .empty-state, .error {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.error {
+    color: var(--danger-color);
+}

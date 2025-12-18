@@ -12,6 +12,7 @@
             <img src="https://freest.com.br/wp-content/uploads/2022/06/logo-site-1-1-1024x188.png" alt="Freest Travel" class="logo">
             <h1><span class="text-primary" data-i18n="presupuesto">Presupuesto</span> <span class="text-secondary" data-i18n="deViaje">de Viaje</span></h1>
             <div class="header-actions">
+                <a href="/admin.html" id="btnVolverAdmin" class="btn-admin" style="display:none;">← Admin</a>
                 <div class="idioma-switch">
                     <button type="button" class="bandera active" data-idioma="es" title="Espanol" onclick="cambiarIdioma('es')">🇦🇷</button>
                     <button type="button" class="bandera" data-idioma="pt" title="Portugues" onclick="cambiarIdioma('pt')">🇧🇷</button>
@@ -207,8 +208,11 @@
                 <button type="button" class="btn-export btn-historial" onclick="abrirHistorial()" data-i18n="historial">Historial</button>
                 <button type="button" class="btn-export btn-pdf" onclick="exportarPDF()" data-i18n="exportarPDF">Exportar PDF</button>
                 <button type="button" class="btn-export btn-excel" onclick="exportarExcel()" data-i18n="exportarExcel">Exportar Excel</button>
+                <button type="button" class="btn-export btn-vendido" id="btnMarcarVendido" onclick="toggleVendido()" style="display:none;" data-i18n="marcarVendido">Marcar Vendido</button>
+                <span class="badge-vendido" id="badgeVendido" style="display:none;">VENDIDO</span>
             </div>
             <input type="hidden" id="presupuestoId" value="">
+            <input type="hidden" id="presupuestoVendido" value="0">
         </form>
     </div>
 

@@ -161,6 +161,12 @@ function cargarDatosUsuario() {
             nombreSpan.textContent = usuario.nombre || usuario.email;
         }
 
+        // Mostrar botón "Volver al Admin" si es admin
+        const btnAdmin = document.getElementById('btnVolverAdmin');
+        if (btnAdmin && usuario.rol === 'admin') {
+            btnAdmin.style.display = 'inline-block';
+        }
+
         // Cargar datos del agente desde el usuario
         document.getElementById('nombreAgente').value = usuario.nombre || '';
         document.getElementById('emailAgente').value = usuario.email || '';
@@ -721,6 +727,11 @@ function cargarPresupuestoEnFormulario(presupuesto) {
     document.getElementById('valorPorPersona').value = presupuesto.valores?.porPersona || '';
     document.getElementById('valorTotal').value = presupuesto.valores?.total || '';
 
+    // Estado de venta
+    const vendido = presupuesto.vendido || false;
+    document.getElementById('presupuestoVendido').value = vendido ? '1' : '0';
+    actualizarUIVendido(vendido);
+
     // Activar modo edición visual
     activarModoEdicion();
 }
@@ -782,11 +793,65 @@ function setToggleValue(inputId, valor) {
 
 function activarModoEdicion() {
     document.body.classList.add('editing-mode');
+    // Mostrar botón de marcar vendido si hay un presupuesto cargado
+    const presupuestoId = document.getElementById('presupuestoId').value;
+    if (presupuestoId) {
+        document.getElementById('btnMarcarVendido').style.display = 'inline-block';
+    }
 }
 
 function desactivarModoEdicion() {
     document.body.classList.remove('editing-mode');
     document.getElementById('presupuestoId').value = '';
+    document.getElementById('presupuestoVendido').value = '0';
+    actualizarUIVendido(false);
+}
+
+// ==================== MARCAR VENDIDO ====================
+
+function actualizarUIVendido(vendido) {
+    const btnVendido = document.getElementById('btnMarcarVendido');
+    const badgeVendido = document.getElementById('badgeVendido');
+    const presupuestoId = document.getElementById('presupuestoId').value;
+
+    if (!presupuestoId) {
+        // No hay presupuesto cargado, ocultar todo
+        btnVendido.style.display = 'none';
+        badgeVendido.style.display = 'none';
+        return;
+    }
+
+    if (vendido) {
+        btnVendido.style.display = 'none';
+        badgeVendido.style.display = 'inline-block';
+    } else {
+        btnVendido.style.display = 'inline-block';
+        badgeVendido.style.display = 'none';
+    }
+}
+
+async function toggleVendido() {
+    const presupuestoId = document.getElementById('presupuestoId').value;
+    if (!presupuestoId) {
+        showToast('Primero guarda el presupuesto', 'error');
+        return;
+    }
+
+    const vendidoActual = document.getElementById('presupuestoVendido').value === '1';
+    const nuevoEstado = !vendidoActual;
+
+    try {
+        const resultado = await marcarVendido(presupuestoId, nuevoEstado);
+        if (resultado.success) {
+            document.getElementById('presupuestoVendido').value = nuevoEstado ? '1' : '0';
+            actualizarUIVendido(nuevoEstado);
+            showToast(nuevoEstado ? 'Presupuesto marcado como vendido' : 'Venta desmarcada', 'success');
+        } else {
+            showToast('Error: ' + resultado.error, 'error');
+        }
+    } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+    }
 }
 
 // Nuevo presupuesto (limpiar formulario)

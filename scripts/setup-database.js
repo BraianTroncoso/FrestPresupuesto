@@ -84,6 +84,10 @@ CREATE TABLE IF NOT EXISTS presupuestos (
     updated_at TEXT DEFAULT (datetime('now')),
     deleted_at TEXT,
 
+    -- Estado de venta
+    vendido INTEGER DEFAULT 0,
+    fecha_venta TEXT,
+
     FOREIGN KEY (agente_id) REFERENCES usuarios(id)
 );
 

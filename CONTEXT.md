@@ -1,7 +1,7 @@
 # FrestPresupuesto - Documentacion Completa
 
 > Sistema de presupuestos de viaje para Freest Travel
-> Ultima actualizacion: 18 de Diciembre 2025
+> Ultima actualizacion: 18 de Diciembre 2025 (noche)
 
 ---
 
@@ -18,7 +18,7 @@ Sistema web para generar presupuestos de viajes con:
 
 | Ambiente | URL |
 |----------|-----|
-| **Produccion** | https://freest-presupuesto.vercel.app |
+| **Produccion** | https://frest-presupuesto.vercel.app |
 | **Repositorio** | https://github.com/BraianTroncoso/FrestPresupuesto |
 | **Rama principal** | `dev` (produccion), `main` (backup) |
 
@@ -707,6 +707,13 @@ jsPDF se ejecuta en el navegador del cliente, sin costo de servidor.
 - **Causa**: No hay navegador disponible
 - **Solucion**: `turso auth login --headless`
 
+### Error "Invalid URL" en Vercel con Turso
+- **Causa**: Variables de entorno con `\n` al final (causado por `echo`)
+- **Solucion**: Usar `echo -n` al agregar variables:
+  ```bash
+  echo -n "valor_sin_newline" | npx vercel env add VARIABLE production
+  ```
+
 ---
 
 ## Estado Actual (18 Dic 2025)
@@ -717,25 +724,27 @@ jsPDF se ejecuta en el navegador del cliente, sin costo de servidor.
 - [x] Vercel conectado al nuevo repositorio
 - [x] Base de datos Turso configurada con tablas y usuarios seed
 - [x] Deploy a produccion realizado
+- [x] **Login en produccion funcionando correctamente**
 
-### Problema Pendiente: Login en Produccion
+### Bug Resuelto: Login en Produccion
 
-**Sintoma**: El endpoint `/api/auth/login` retorna "Error interno del servidor"
+**Problema original**: El endpoint `/api/auth/login` retornaba "Error interno del servidor" con detalle "Invalid URL".
 
-**Estado de investigacion**:
-- Localmente funciona correctamente (probado con script de debug)
-- Las variables de entorno estan configuradas en Vercel
-- El problema parece ser que Vercel no esta tomando el codigo mas reciente de GitHub
+**Causas encontradas**:
+1. El proyecto en Vercel apuntaba a una branch vieja de otro repositorio
+2. Las variables de entorno tenian un `\n` al final (causado por usar `echo` sin `-n`)
 
-**Solucion a intentar**:
-1. Desconectar y reconectar el repo en Vercel Settings → Git
-2. O hacer un nuevo deployment forzando desde el dashboard con el commit correcto
-3. Se agrego logging detallado en `api/auth/login.js` para diagnosticar (commit `ea44d78`)
+**Solucion aplicada**:
+1. Se recreo el proyecto en Vercel con la URL correcta: `frest-presupuesto.vercel.app`
+2. Se eliminaron y re-agregaron las variables de entorno usando `echo -n` para evitar el newline:
+   ```bash
+   echo -n "valor" | npx vercel env add VARIABLE_NAME production
+   ```
 
-**Test rapido**:
+**Test de verificacion**:
 ```bash
-# Debe retornar {success: true, usuario: {...}}
-curl -X POST https://freest-presupuesto.vercel.app/api/auth/login \
+# Retorna {success: true, usuario: {...}}
+curl -X POST https://frest-presupuesto.vercel.app/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@freest.com","password":"admin123"}'
 ```
@@ -744,7 +753,7 @@ curl -X POST https://freest-presupuesto.vercel.app/api/auth/login \
 
 ## Proximos Pasos
 
-1. [ ] **URGENTE**: Resolver error de login en produccion
+1. [x] ~~**URGENTE**: Resolver error de login en produccion~~ (RESUELTO)
 2. [ ] Cambiar contrasenas de produccion (admin123, agente123)
 3. [ ] Configurar dominio personalizado (opcional)
 4. [ ] Implementar gestion de usuarios en el frontend
@@ -752,6 +761,13 @@ curl -X POST https://freest-presupuesto.vercel.app/api/auth/login \
 ---
 
 ## Historial de Actualizaciones
+
+### 2025-12-18 (noche)
+- **Bug de login resuelto**: El problema era doble:
+  1. Vercel apuntaba a branch incorrecta de repo viejo
+  2. Variables de entorno tenian `\n` al final por usar `echo` sin `-n`
+- **Nuevo proyecto Vercel**: URL cambiada a `frest-presupuesto.vercel.app`
+- **Sistema operativo**: Login y autenticacion funcionando en produccion
 
 ### 2025-12-18
 - **Migracion de repositorio**: Fork eliminado, nuevo repo independiente creado
