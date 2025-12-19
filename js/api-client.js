@@ -56,7 +56,7 @@ async function cerrarSesion() {
 
 async function guardarPresupuesto(datos) {
     try {
-        const result = await fetchAPI('/presupuestos/create', {
+        const result = await fetchAPI('/presupuestos', {
             method: 'POST',
             body: JSON.stringify(datos)
         });
