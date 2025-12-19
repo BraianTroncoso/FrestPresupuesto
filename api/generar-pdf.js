@@ -23,10 +23,11 @@ export default async function handler(req, res) {
         // Generar PDF
         const pdfBuffer = await generarPDF(datos);
 
-        // Enviar PDF
+        // Enviar PDF como binario
         res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Length', pdfBuffer.length);
         res.setHeader('Content-Disposition', `attachment; filename="presupuesto_${datos.presupuesto?.numero || '00'}.pdf"`);
-        res.send(pdfBuffer);
+        return res.end(pdfBuffer);
 
     } catch (error) {
         console.error('Error generando PDF:', error);
