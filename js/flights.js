@@ -43,24 +43,19 @@ async function buscarVuelo(vueloItem) {
     vueloItem.classList.add('loading');
 
     try {
-        const infoVuelo = await obtenerInfoVuelo(numeroVuelo, fechaVuelo);
+        const resultado = await obtenerInfoVuelo(numeroVuelo, fechaVuelo);
 
+        // Si hay múltiples tramos, mostrar selector
+        if (resultado.multiples) {
+            inputNumero.disabled = false;
+            vueloItem.classList.remove('loading');
+            mostrarSelectorTramos(vueloItem, resultado.tramos, fechaVuelo);
+            return;
+        }
+
+        const infoVuelo = resultado;
         if (infoVuelo) {
-            // Llenar campos ocultos
-            vueloItem.querySelector('.vuelo-origen').value = infoVuelo.origen || '';
-            vueloItem.querySelector('.vuelo-destino').value = infoVuelo.destino || '';
-            vueloItem.querySelector('.vuelo-aerolinea').value = infoVuelo.aerolinea || '';
-            vueloItem.querySelector('.vuelo-duracion').value = infoVuelo.duracion || '';
-            vueloItem.querySelector('.vuelo-escalas').value = infoVuelo.escalas || 'Directo';
-            vueloItem.querySelector('.vuelo-hora-salida').value = infoVuelo.horaSalida || '';
-            vueloItem.querySelector('.vuelo-hora-llegada').value = infoVuelo.horaLlegada || '';
-
-            if (infoVuelo.fecha && !fechaVuelo) {
-                vueloItem.querySelector('.vuelo-fecha').value = infoVuelo.fecha;
-            }
-
-            // Mostrar resumen
-            mostrarResumenVuelo(vueloItem, infoVuelo);
+            llenarDatosVuelo(vueloItem, infoVuelo, fechaVuelo);
             showToast('Vuelo encontrado');
         }
     } catch (error) {
@@ -70,6 +65,134 @@ async function buscarVuelo(vueloItem) {
         inputNumero.disabled = false;
         vueloItem.classList.remove('loading');
     }
+}
+
+// Llenar datos del vuelo en el formulario
+function llenarDatosVuelo(vueloItem, infoVuelo, fechaVuelo) {
+    vueloItem.querySelector('.vuelo-origen').value = infoVuelo.origen || '';
+    vueloItem.querySelector('.vuelo-destino').value = infoVuelo.destino || '';
+    vueloItem.querySelector('.vuelo-aerolinea').value = infoVuelo.aerolinea || '';
+    vueloItem.querySelector('.vuelo-duracion').value = infoVuelo.duracion || '';
+    vueloItem.querySelector('.vuelo-escalas').value = infoVuelo.escalas || 'Directo';
+    vueloItem.querySelector('.vuelo-hora-salida').value = infoVuelo.horaSalida || '';
+    vueloItem.querySelector('.vuelo-hora-llegada').value = infoVuelo.horaLlegada || '';
+
+    if (infoVuelo.fecha && !fechaVuelo) {
+        vueloItem.querySelector('.vuelo-fecha').value = infoVuelo.fecha;
+    }
+
+    mostrarResumenVuelo(vueloItem, infoVuelo);
+}
+
+// Mostrar modal para seleccionar tramo cuando hay múltiples
+function mostrarSelectorTramos(vueloItem, tramos, fechaVuelo) {
+    // Remover modal existente si hay
+    const modalExistente = document.getElementById('modalSelectorTramos');
+    if (modalExistente) modalExistente.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modalSelectorTramos';
+    // Estilos inline para forzar centrado
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+
+    let tramosHTML = tramos.map((tramo, index) => `
+        <div class="tramo-opcion" data-index="${index}">
+            <div class="tramo-ruta">
+                <strong>${tramo.origen}</strong> → <strong>${tramo.destino}</strong>
+            </div>
+            <div class="tramo-horario">
+                ${tramo.horaSalida} - ${tramo.horaLlegada} (${tramo.duracion})
+            </div>
+            <div class="tramo-aerolinea">${tramo.aerolinea}</div>
+        </div>
+    `).join('');
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Seleccionar Tramo</h2>
+                <button class="modal-close" onclick="cerrarSelectorTramos()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: #64748b;">Este vuelo tiene múltiples tramos. Seleccioná el que corresponde:</p>
+                <div class="tramos-lista">
+                    ${tramosHTML}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Agregar estilos si no existen
+    if (!document.getElementById('estilosSelectorTramos')) {
+        const estilos = document.createElement('style');
+        estilos.id = 'estilosSelectorTramos';
+        estilos.textContent = `
+            #modalSelectorTramos {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            }
+            #modalSelectorTramos .modal-content {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            .tramos-lista { display: flex; flex-direction: column; gap: 10px; }
+            .tramo-opcion {
+                padding: 15px;
+                border: 2px solid #e2e8f0;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .tramo-opcion:hover {
+                border-color: #435c91;
+                background: #f8fafc;
+            }
+            .tramo-ruta { font-size: 16px; margin-bottom: 5px; }
+            .tramo-horario { color: #64748b; font-size: 14px; }
+            .tramo-aerolinea { color: #ed6e1a; font-size: 12px; margin-top: 5px; }
+        `;
+        document.head.appendChild(estilos);
+    }
+
+    // Event listeners para selección
+    modal.querySelectorAll('.tramo-opcion').forEach(opcion => {
+        opcion.addEventListener('click', () => {
+            const index = parseInt(opcion.dataset.index);
+            const tramoSeleccionado = tramos[index];
+            llenarDatosVuelo(vueloItem, tramoSeleccionado, fechaVuelo);
+            cerrarSelectorTramos();
+            showToast('Tramo seleccionado');
+        });
+    });
+}
+
+function cerrarSelectorTramos() {
+    const modal = document.getElementById('modalSelectorTramos');
+    if (modal) modal.remove();
 }
 
 // Mostrar resumen compacto del vuelo
@@ -155,22 +278,6 @@ async function obtenerInfoVuelo(codigoVuelo, fecha) {
         throw new Error('No se encontró información del vuelo');
     }
 
-    const vuelo = data[0];
-    const departure = vuelo.departure || {};
-    const arrival = vuelo.arrival || {};
-    const airline = vuelo.airline || {};
-    const aircraft = vuelo.aircraft || {};
-
-    let duracion = '';
-    if (departure.scheduledTime?.utc && arrival.scheduledTime?.utc) {
-        const salida = new Date(departure.scheduledTime.utc);
-        const llegada = new Date(arrival.scheduledTime.utc);
-        const diffMs = llegada - salida;
-        const hours = Math.floor(diffMs / (1000 * 60 * 60));
-        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        duracion = `${hours}h ${minutes}m`;
-    }
-
     const extractTime = (timeObj) => {
         if (timeObj?.local) {
             const match = timeObj.local.match(/(\d{2}:\d{2})/);
@@ -187,7 +294,6 @@ async function obtenerInfoVuelo(codigoVuelo, fecha) {
         return '';
     };
 
-    // Formatear origen y destino de forma más limpia
     const formatAirport = (airport) => {
         if (!airport) return '';
         const city = airport.municipalityName || airport.shortName || airport.name || '';
@@ -195,15 +301,46 @@ async function obtenerInfoVuelo(codigoVuelo, fecha) {
         return iata ? `${city} (${iata})` : city;
     };
 
-    return {
-        origen: formatAirport(departure.airport),
-        destino: formatAirport(arrival.airport),
-        aerolinea: airline.name || '',
-        horaSalida: extractTime(departure.scheduledTime),
-        horaLlegada: extractTime(arrival.scheduledTime),
-        duracion: duracion,
-        escalas: data.length > 1 ? `${data.length - 1} escala(s)` : 'Directo',
-        fecha: extractDate(departure.scheduledTime),
-        avion: aircraft.model || ''
+    const calcularDuracion = (departure, arrival) => {
+        if (departure.scheduledTime?.utc && arrival.scheduledTime?.utc) {
+            const salida = new Date(departure.scheduledTime.utc);
+            const llegada = new Date(arrival.scheduledTime.utc);
+            const diffMs = llegada - salida;
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            return `${hours}h ${minutes}m`;
+        }
+        return '';
     };
+
+    const procesarVuelo = (vuelo) => {
+        const departure = vuelo.departure || {};
+        const arrival = vuelo.arrival || {};
+        const airline = vuelo.airline || {};
+        const aircraft = vuelo.aircraft || {};
+
+        return {
+            origen: formatAirport(departure.airport),
+            destino: formatAirport(arrival.airport),
+            aerolinea: airline.name || '',
+            horaSalida: extractTime(departure.scheduledTime),
+            horaLlegada: extractTime(arrival.scheduledTime),
+            duracion: calcularDuracion(departure, arrival),
+            escalas: 'Directo',
+            fecha: extractDate(departure.scheduledTime),
+            avion: aircraft.model || ''
+        };
+    };
+
+    // Si hay múltiples tramos, devolver para selección
+    if (data.length > 1) {
+        const tramos = data.map(vuelo => procesarVuelo(vuelo));
+        return {
+            multiples: true,
+            tramos: tramos
+        };
+    }
+
+    // Si hay un solo tramo, devolver directamente
+    return procesarVuelo(data[0]);
 }
