@@ -274,7 +274,7 @@ function generarHTML(datos) {
                 <div class="duracion">${vuelo.duracion || ''}</div>
                 <div class="linea-container">
                     <div class="linea"></div>
-                    <span class="avion ${esIda ? 'ida' : 'vuelta'}">✈</span>
+                    <span class="avion ${esIda ? 'ida' : 'vuelta'}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></span>
                 </div>
                 <div class="escalas">${(!vuelo.escalas || vuelo.escalas.toLowerCase() === 'directo') ? t.directo : ''}</div>
             </div>
@@ -373,9 +373,10 @@ function generarHTML(datos) {
         .vuelo-flecha .duracion { font-size: 9px; color: #64748b; margin-bottom: 3px; }
         .vuelo-flecha .linea-container { width: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
         .vuelo-flecha .linea { width: 70%; height: 2px; background: linear-gradient(90deg, #435c91 0%, #ed6e1a 100%); border-radius: 1px; }
-        .vuelo-flecha .avion { position: absolute; font-size: 16px; color: #435c91; }
-        .vuelo-flecha .avion.ida { right: 10%; }
-        .vuelo-flecha .avion.vuelta { left: 10%; transform: rotate(180deg); }
+        .vuelo-flecha .avion { position: absolute; width: 16px; height: 16px; color: #435c91; }
+        .vuelo-flecha .avion svg { width: 100%; height: 100%; }
+        .vuelo-flecha .avion.ida { right: 10%; transform: rotate(90deg); }
+        .vuelo-flecha .avion.vuelta { left: 10%; transform: rotate(-90deg); }
         .vuelo-flecha .escalas { font-size: 9px; color: #ed6e1a; margin-top: 3px; font-weight: 500; }
         .tarifa-info { display: flex; align-items: center; gap: 2mm; padding: 2mm 10mm; font-size: 9px; color: #64748b; }
         .tarifa-descripcion { color: #64748b; font-weight: 500; }
