@@ -1,7 +1,7 @@
 # FrestPresupuesto - Documentacion Completa
 
 > Sistema de presupuestos de viaje para Freest Travel
-> Ultima actualizacion: 18 de Diciembre 2025 (madrugada)
+> Ultima actualizacion: 30 de Diciembre 2025
 
 ---
 
@@ -163,17 +163,15 @@ FrestPresupuesto/
 |   +-- auth.js
 |
 +-- js/
-|   +-- app.js                # + toggleVendido(), actualizarUIVendido()
-|   +-- api-client.js         # + marcarVendido(), obtenerEstadisticasVentas()
+|   +-- app.js                # Logica principal + traducciones + toggleVendido()
+|   +-- api-client.js         # Cliente REST API
 |   +-- pdf-generator.js      # Llama a /api/generar-pdf
-|   +-- pdf-puppeteer.cjs     # Generador local (CommonJS)
+|   +-- flights.js            # Busqueda vuelos API + selector tramos multiples
 |
-+-- index.html                # + boton vendido, badge vendido
++-- index.html                # App principal
 +-- login.html                # Redirect por rol
-+-- admin.html                # Landing + Dashboard (NUEVO)
-+-- test-pdf.html             # Testing PDF (NUEVO)
-+-- server.cjs                # Servidor local con Puppeteer
-+-- vercel.json               # + config memoria para generar-pdf
++-- admin.html                # Landing + Dashboard
++-- vercel.json               # Config Vercel
 ```
 
 ---
@@ -288,21 +286,17 @@ curl -X POST https://frest-presupuesto.vercel.app/api/generar-pdf \
 
 ## Testing Local
 
-### Con Vercel Dev (sin PDF local)
+### Desarrollo Local
 ```bash
 npx vercel dev
 # http://localhost:3000
 ```
 
-### Con Server.cjs (PDF funciona local)
-```bash
-node server.cjs
-# http://localhost:3000/api/test-pdf
-```
+Esto levanta el proyecto con todas las serverless functions funcionando, incluyendo la generacion de PDFs.
 
 ### Test de PDF en Produccion
 ```
-https://frest-presupuesto.vercel.app/test-pdf.html
+https://frest-presupuesto.vercel.app
 ```
 
 ---
@@ -336,15 +330,19 @@ login.html
 
 ---
 
-## Estado Actual (18 Dic 2025 - Madrugada)
+## Estado Actual (30 Dic 2025)
 
 ### Completado
 - [x] Dashboard Admin con estadisticas de ventas
 - [x] Sistema "Marcar Vendido" en presupuestos
 - [x] Generacion PDF con Puppeteer en Vercel
-- [x] Traducciones ES/PT en admin.html
-- [x] Test de PDF en produccion funcionando
-- [x] Deploy a produccion exitoso
+- [x] Traducciones ES/PT
+- [x] Vuelos separados en "IDA" y "VUELTA" en PDF
+- [x] Tarifas sin "Basic/Light/Full" (solo muestra equipaje)
+- [x] Aviones SVG en PDF (compatibilidad Vercel)
+- [x] Sin cotizacion en PDFs portugues (brasileros pagan en Real)
+- [x] Selector de tramos para vuelos con multiples segmentos
+- [x] Eliminacion de archivos duplicados (centralizado en api/generar-pdf.js)
 
 ### Pendiente
 - [ ] Cambiar contrasenas de produccion
@@ -353,6 +351,24 @@ login.html
 ---
 
 ## Historial de Actualizaciones
+
+### 2025-12-30
+- **PDF Vuelos mejorado**:
+  - Vuelos separados en secciones "IDA" y "VUELTA" con titulos
+  - Aviones ahora usan SVG (emoji no renderizaba en Vercel)
+  - Rotacion: ida apunta derecha, vuelta apunta izquierda
+- **Tarifas simplificadas**:
+  - Eliminado "Basic/Light/Full", solo muestra equipaje: "Solo mochila", "Mochila + Carry on", etc.
+  - Traducciones ES/PT actualizadas
+- **PDF Portugues**:
+  - Eliminada seccion "Cotizacion" (brasileros pagan solo en Real, no necesitan referencia dolar)
+- **Selector de tramos**:
+  - Cuando un vuelo tiene multiples segmentos (ej: LA777 con escala), aparece modal para elegir cual tramo
+  - Evita confusion con vuelos que usan mismo numero para diferentes tramos
+- **Limpieza de codigo**:
+  - Eliminados archivos duplicados: `js/pdf-export.js`, `js/pdf-puppeteer.cjs`, `server.cjs`
+  - Todo centralizado en `api/generar-pdf.js` (unico archivo que genera PDFs)
+- **Testing local**: Usar `npx vercel dev` (ya no existe server.cjs)
 
 ### 2025-12-18 (madrugada)
 - **Dashboard Admin**: Landing page + estadisticas de ventas por agente
