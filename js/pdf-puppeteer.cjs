@@ -87,19 +87,19 @@ function generarHTML(datos) {
         return mapeo[regimen] || capitalizar(regimen);
     };
 
-    // Formatear tipo de tarifa (con traducciones)
+    // Formatear tipo de tarifa (solo descripción del equipaje)
     const formatearTarifa = (tarifa, idioma = 'es') => {
         if (!tarifa) return null;
         const mapeo = {
             es: {
-                'basic': { nombre: 'BASIC', descripcion: 'Solo mochila' },
-                'light': { nombre: 'LIGHT', descripcion: 'Mochila + Carry on' },
-                'full': { nombre: 'FULL', descripcion: 'Mochila + Carry on + Valija 23kg' }
+                'basic': 'Solo mochila',
+                'light': 'Mochila + Carry on',
+                'full': 'Mochila + Carry on + Valija 23kg'
             },
             pt: {
-                'basic': { nombre: 'BASIC', descripcion: 'Só mochila' },
-                'light': { nombre: 'LIGHT', descripcion: 'Mochila + Bagagem de mão' },
-                'full': { nombre: 'FULL', descripcion: 'Mochila + Bagagem de mão + Mala 23kg' }
+                'basic': 'Só mochila',
+                'light': 'Mochila + Carry on',
+                'full': 'Mochila + Carry on + Mala 23kg'
             }
         };
         return mapeo[idioma]?.[tarifa] || mapeo['es'][tarifa] || null;
@@ -230,50 +230,59 @@ function generarHTML(datos) {
     // Si es solo ida (misma fecha), mostrar solo una
     const fechasVueloTexto = fechaIniVuelo === fechaFinVuelo ? fechaIniVuelo : `${fechaIniVuelo} ${t.al} ${fechaFinVuelo}`;
 
-    // Generar HTML de vuelos
+    // HTML Vuelos - Separados por Ida y Vuelta
+    const renderizarVuelo = (vuelo, esIda) => {
+        const izqCodigo = esIda ? vuelo.origen : vuelo.destino;
+        const izqHora = esIda ? vuelo.horaSalida : vuelo.horaLlegada;
+        const derCodigo = esIda ? vuelo.destino : vuelo.origen;
+        const derHora = esIda ? vuelo.horaLlegada : vuelo.horaSalida;
+        const llegaSiguienteDia = vuelo.horaLlegada && vuelo.horaSalida && vuelo.horaLlegada < vuelo.horaSalida;
+        const izqMas1 = !esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
+        const derMas1 = esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
+
+        return `
+        <div class="vuelo">
+            <div><span class="vuelo-badge">${vuelo.aerolinea || 'AIRLINE'}</span></div>
+            <div class="vuelo-tiempo">
+                <div class="hora">${izqHora || '--:--'}${izqMas1}</div>
+                <div class="codigo">${izqCodigo || '---'}</div>
+            </div>
+            <div class="vuelo-flecha">
+                <div class="duracion">${vuelo.duracion || ''}</div>
+                <div class="linea-container">
+                    <div class="linea"></div>
+                    <span class="avion ${esIda ? 'ida' : 'vuelta'}">✈</span>
+                </div>
+                <div class="escalas">${(!vuelo.escalas || vuelo.escalas.toLowerCase() === 'directo') ? t.directo : ''}</div>
+            </div>
+            <div class="vuelo-tiempo">
+                <div class="hora">${derHora || '--:--'}${derMas1}</div>
+                <div class="codigo">${derCodigo || '---'}</div>
+            </div>
+        </div>`;
+    };
+
+    // Separar vuelos por tipo
+    const vuelosIda = vuelos.filter(v => (v.numero || v.origen) && (v.tipo === 'ida' || !v.tipo));
+    const vuelosVuelta = vuelos.filter(v => (v.numero || v.origen) && v.tipo === 'vuelta');
+
     let vuelosHTML = '';
-    vuelos.forEach((vuelo, idx) => {
-        if (vuelo.numero || vuelo.origen) {
-            const esIda = vuelo.tipo === 'ida' || !vuelo.tipo;
 
-            // Para vuelta, invertir códigos Y horas
+    // Sección IDA
+    if (vuelosIda.length > 0) {
+        vuelosHTML += `<div class="vuelos-seccion-titulo">${idioma === 'pt' ? 'IDA' : 'IDA'}</div>`;
+        vuelosIda.forEach(vuelo => {
+            vuelosHTML += renderizarVuelo(vuelo, true);
+        });
+    }
 
-            const izqCodigo = esIda ? vuelo.origen : vuelo.destino;
-            const izqHora = esIda ? vuelo.horaSalida : vuelo.horaLlegada;
-            const derCodigo = esIda ? vuelo.destino : vuelo.origen;
-            const derHora = esIda ? vuelo.horaLlegada : vuelo.horaSalida;
-
-            // Detectar si llega al día siguiente (hora llegada < hora salida)
-            const llegaSiguienteDia = vuelo.horaLlegada && vuelo.horaSalida && vuelo.horaLlegada < vuelo.horaSalida;
-            // El +1 va en la hora de llegada: derHora para IDA, izqHora para VUELTA
-            const izqMas1 = !esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
-            const derMas1 = esIda && llegaSiguienteDia ? '<sup>+1</sup>' : '';
-
-
-            vuelosHTML += `
-            <div class="vuelo">
-                <div>
-                    <span class="vuelo-badge">${vuelo.aerolinea || 'AIRLINE'}</span>
-                </div>
-                <div class="vuelo-tiempo">
-                    <div class="hora">${izqHora || '--:--'}${izqMas1}</div>
-                    <div class="codigo">${izqCodigo || '---'}</div>
-                </div>
-                <div class="vuelo-flecha">
-                    <div class="duracion">${vuelo.duracion || ''}</div>
-                    <div class="linea-container">
-                        <div class="linea"></div>
-                        <span class="avion ${esIda ? 'ida' : 'vuelta'}">✈</span>
-                    </div>
-                    <div class="escalas">${(!vuelo.escalas || vuelo.escalas.toLowerCase() === 'directo') ? t.directo : ''}</div>
-                </div>
-                <div class="vuelo-tiempo">
-                    <div class="hora">${derHora || '--:--'}${derMas1}</div>
-                    <div class="codigo">${derCodigo || '---'}</div>
-                </div>
-            </div>`;
-        }
-    });
+    // Sección VUELTA
+    if (vuelosVuelta.length > 0) {
+        vuelosHTML += `<div class="vuelos-seccion-titulo">${idioma === 'pt' ? 'VOLTA' : 'VUELTA'}</div>`;
+        vuelosVuelta.forEach(vuelo => {
+            vuelosHTML += renderizarVuelo(vuelo, false);
+        });
+    }
 
     // Generar HTML de hoteles
     let hotelesHTML = '';
@@ -593,17 +602,20 @@ function generarHTML(datos) {
             color: #64748b;
         }
 
-        .tarifa-badge {
-            color: #435c91;
-            font-weight: 600;
-        }
-
         .tarifa-descripcion {
-            color: #94a3b8;
+            color: #64748b;
+            font-weight: 500;
         }
 
-        .tarifa-iconos {
+        /* TITULOS SECCION VUELOS */
+        .vuelos-seccion-titulo {
             font-size: 10px;
+            font-weight: 600;
+            color: #435c91;
+            padding: 2mm 10mm 1mm 10mm;
+            margin-top: 1mm;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* HOTELES CONTAINER */
@@ -770,8 +782,7 @@ function generarHTML(datos) {
         <div class="vuelos-container">
             ${presupuesto.tipoTarifa && formatearTarifa(presupuesto.tipoTarifa, idioma) ? `
             <div class="tarifa-info">
-                <span class="tarifa-badge">${formatearTarifa(presupuesto.tipoTarifa, idioma).nombre}</span>
-                <span class="tarifa-descripcion">- ${formatearTarifa(presupuesto.tipoTarifa, idioma).descripcion}</span>
+                <span class="tarifa-descripcion">${formatearTarifa(presupuesto.tipoTarifa, idioma)}</span>
             </div>
             ` : ''}
             ${vuelosHTML}

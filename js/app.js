@@ -32,6 +32,10 @@ const TRADUCCIONES = {
         soloIda: 'Solo Ida',
         idaVuelta: 'Ida y Vuelta',
         multiDestino: 'Multi-destino',
+        // Tarifas
+        tarifaBasic: 'Solo mochila',
+        tarifaLight: 'Mochila + Carry on',
+        tarifaFull: 'Mochila + Carry on + Valija 23kg',
         // Vuelos
         vuelosIda: 'Vuelos de Ida',
         vuelosVuelta: 'Vuelos de Vuelta',
@@ -88,6 +92,10 @@ const TRADUCCIONES = {
         soloIda: 'Só Ida',
         idaVuelta: 'Ida e Volta',
         multiDestino: 'Multi-destino',
+        // Tarifas
+        tarifaBasic: 'Só mochila',
+        tarifaLight: 'Mochila + Carry on',
+        tarifaFull: 'Mochila + Carry on + Mala 23kg',
         // Vuelos
         vuelosIda: 'Voos de Ida',
         vuelosVuelta: 'Voos de Volta',
