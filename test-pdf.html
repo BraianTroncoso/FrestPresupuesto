@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF - Freest Travel</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #435c91 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 { color: #1e293b; margin-bottom: 10px; }
+        p { color: #64748b; margin-bottom: 30px; }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #ed6e1a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: #d55d0a; transform: scale(1.02); }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+        .btn-pt { background: #435c91; }
+        .btn-pt:hover { background: #364b7a; }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        #status.success { display: block; background: #dcfce7; color: #166534; }
+        #status.error { display: block; background: #fef2f2; color: #dc2626; }
+        #status.loading { display: block; background: #f0f9ff; color: #0369a1; }
+        .datos-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 13px;
+            color: #334155;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Generador PDF</h1>
+        <p>Genera un PDF con datos de ejemplo usando Puppeteer (igual que produccion).</p>
+
+        <div class="datos-preview">
+            <strong>Datos de prueba:</strong><br>
+            Cliente: Juan Perez Rodriguez<br>
+            Destino: Rio de Janeiro<br>
+            Vuelos: 2 (ida y vuelta LATAM)<br>
+            Hotel: Copacabana Palace<br>
+            Total: USD 3.700
+        </div>
+
+        <button class="btn" onclick="generarPDF('es')" id="btnES">
+            Descargar PDF (Espanol)
+        </button>
+        <button class="btn btn-pt" onclick="generarPDF('pt')" id="btnPT">
+            Descargar PDF (Portugues)
+        </button>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const DATOS_TEST = {
+            agente: {
+                nombre: "Maria Garcia",
+                email: "maria@freest.com.br",
+                telefono: "(11) 99999-8888",
+                cadastur: "37.286.620/0001-49"
+            },
+            cliente: {
+                nombre: "Juan Perez Rodriguez",
+                telefono: "+54 9 351 123-4567",
+                ciudad: "Cordoba, Argentina",
+                destinoFinal: "Rio de Janeiro",
+                cantidadPasajeros: 2
+            },
+            presupuesto: {
+                numero: "0042",
+                fecha: new Date().toISOString().split('T')[0],
+                tipoViaje: "idaVuelta",
+                tipoTarifa: "light"
+            },
+            vuelos: [
+                {
+                    tipo: "ida",
+                    numero: "LA8059",
+                    origen: "COR",
+                    destino: "GIG",
+                    fecha: "2025-02-15",
+                    horaSalida: "08:30",
+                    horaLlegada: "14:45",
+                    aerolinea: "LATAM",
+                    duracion: "6h 15m",
+                    escalas: "1 escala GRU"
+                },
+                {
+                    tipo: "vuelta",
+                    numero: "LA8060",
+                    origen: "GIG",
+                    destino: "COR",
+                    fecha: "2025-02-22",
+                    horaSalida: "22:00",
+                    horaLlegada: "04:30",
+                    aerolinea: "LATAM",
+                    duracion: "6h 30m",
+                    escalas: "Directo"
+                }
+            ],
+            hoteles: [
+                {
+                    nombre: "Copacabana Palace",
+                    url: "https://copacabanapalace.com",
+                    tipoCuarto: "Suite Ocean View",
+                    fechaEntrada: "2025-02-15",
+                    fechaSalida: "2025-02-22",
+                    noches: 7,
+                    regimen: "desayuno",
+                    imagen: null
+                }
+            ],
+            incluyeTransfer: true,
+            incluyeSeguro: true,
+            incluyeVehiculo: false,
+            moneda: "USD",
+            valores: {
+                porPersona: 1850,
+                total: 3700
+            },
+            idioma: "es"
+        };
+
+        async function generarPDF(idioma) {
+            const status = document.getElementById('status');
+            const btnES = document.getElementById('btnES');
+            const btnPT = document.getElementById('btnPT');
+
+            btnES.disabled = true;
+            btnPT.disabled = true;
+            status.className = 'loading';
+            status.textContent = 'Generando PDF con Puppeteer...';
+            status.style.display = 'block';
+
+            try {
+                const datos = JSON.parse(JSON.stringify(DATOS_TEST));
+                datos.idioma = idioma;
+
+                const response = await fetch('/api/generar-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.error || 'Error del servidor');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `presupuesto_test_${idioma}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                status.className = 'success';
+                status.textContent = 'PDF descargado! Revisa tu carpeta de descargas.';
+
+            } catch (error) {
+                console.error('Error:', error);
+                status.className = 'error';
+                status.textContent = 'Error: ' + error.message;
+            } finally {
+                btnES.disabled = false;
+                btnPT.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

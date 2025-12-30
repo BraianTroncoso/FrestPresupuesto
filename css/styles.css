@@ -43,6 +43,7 @@ header {
     background: #1e293b;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    position: relative;
 }
 
 header .logo {
@@ -54,6 +55,72 @@ header .logo {
 header h1 {
     font-size: 1.6rem;
     font-weight: 700;
+}
+
+/* Switch de idioma */
+/* Header actions container */
+.header-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.idioma-switch {
+    display: flex;
+    gap: 5px;
+}
+
+/* Botón logout */
+.btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+}
+
+.btn-logout #usuarioNombre {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.idioma-switch .bandera {
+    padding: 6px 10px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s;
+    font-size: 22px;
+    background: rgba(255,255,255,0.1);
+}
+
+.idioma-switch .bandera:hover {
+    opacity: 0.8;
+    background: rgba(255,255,255,0.2);
+}
+
+.idioma-switch .bandera.active {
+    border-color: var(--primary-color);
+    opacity: 1;
+    background: rgba(255,255,255,0.15);
 }
 
 .text-primary {
@@ -755,4 +822,511 @@ input[type="file"] {
 .btn-nuevo:hover {
     background: var(--primary-color);
     color: white;
+}
+
+/* ==================== VALIDACIÓN Y ERRORES ==================== */
+
+/* Input con error */
+.form-group.has-error input,
+.form-group.has-error select {
+    border-color: var(--danger-color);
+    background-color: #fef2f2;
+}
+
+.form-group.has-error input:focus,
+.form-group.has-error select:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Mensaje de error debajo del campo */
+.error-message {
+    display: none;
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    padding: 6px 10px;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 3px solid var(--danger-color);
+}
+
+.form-group.has-error .error-message {
+    display: block;
+    animation: errorShake 0.3s ease;
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Alerta de error general (reemplaza al alert nativo) */
+.error-alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    max-width: 450px;
+    width: 90%;
+    animation: slideDown 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+.error-alert-header {
+    background: var(--danger-color);
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.error-alert-header .error-icon {
+    font-size: 1.2rem;
+}
+
+.error-alert-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.error-alert-body {
+    padding: 15px;
+}
+
+.error-alert-body p {
+    margin: 0 0 10px 0;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.error-alert-tip {
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.error-alert-tip::before {
+    content: '💡';
+}
+
+.error-alert-footer {
+    padding: 10px 15px 15px;
+    text-align: right;
+}
+
+.error-alert-close {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.error-alert-close:hover {
+    background: var(--primary-hover);
+}
+
+/* Overlay para la alerta */
+.error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1999;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Resaltar campos requeridos vacíos */
+.form-group.highlight-required label::after {
+    content: ' *';
+    color: var(--danger-color);
+}
+
+/* Posicionamiento relativo para mensajes de error */
+.form-group {
+    position: relative;
+}
+
+/* Label con indicador de error */
+.form-group.has-error label {
+    color: var(--danger-color);
+}
+
+/* ==================== BOTÓN ADMIN ==================== */
+
+.btn-admin {
+    padding: 6px 14px;
+    background: rgba(255, 127, 30, 0.2);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-admin:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ==================== BOTÓN MARCAR VENDIDO ==================== */
+
+.btn-vendido {
+    background: var(--success-color) !important;
+    color: white !important;
+}
+
+.btn-vendido:hover {
+    background: #20bd5a !important;
+}
+
+.badge-vendido {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--success-color) 0%, #20bd5a 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: var(--radius);
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
+/* ==================== ADMIN LANDING ==================== */
+
+.admin-landing {
+    padding: 60px 0;
+}
+
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 30px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.admin-card-presupuesto:hover {
+    border-color: var(--primary-color);
+}
+
+.admin-card-dashboard:hover {
+    border-color: var(--secondary-color);
+}
+
+.admin-card-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.admin-card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.admin-card p {
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* ==================== DASHBOARD ==================== */
+
+.dashboard-section {
+    padding: 20px 0;
+}
+
+.btn-volver {
+    background: transparent;
+    border: 2px solid var(--border);
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-volver:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Filtro de período */
+.filtro-periodo {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filtro-periodo button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.filtro-periodo button:hover {
+    border-color: var(--secondary-color);
+}
+
+.filtro-periodo button.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+/* Tabla de estadísticas */
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.stats-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.stats-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.stats-table .totales-row {
+    background: linear-gradient(135deg, #FFF5EB 0%, #FFE8D6 100%);
+    cursor: default;
+}
+
+.stats-table .totales-row:hover {
+    background: linear-gradient(135deg, #FFF5EB 0%, #FFE8D6 100%);
+}
+
+.stats-table .totales-row td {
+    border-top: 2px solid var(--primary-color);
+    font-weight: 600;
+}
+
+/* Detalle expandible */
+.detalle-agente {
+    background: #f8fafc;
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: var(--radius);
+    display: none;
+}
+
+.detalle-agente.show {
+    display: block;
+}
+
+.detalle-agente table {
+    width: 100%;
+    font-size: 0.85rem;
+}
+
+.detalle-agente th {
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Lista de usuarios */
+.usuarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.usuarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.usuario-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.usuario-item:hover {
+    border-color: var(--secondary-color);
+}
+
+.usuario-item.is-admin {
+    border-left: 4px solid var(--primary-color);
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.usuario-nombre {
+    font-weight: 600;
+}
+
+.usuario-email {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.usuario-rol {
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-admin {
+    background: var(--primary-color);
+    color: white;
+}
+
+.badge-agente {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.usuario-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-accion {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.btn-accion:hover:not(:disabled) {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.btn-accion.btn-eliminar:hover:not(:disabled) {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.btn-accion.btn-dar-baja {
+    border-color: #f87171;
+    color: #dc2626;
+    background: #fef2f2;
+}
+
+.btn-accion.btn-dar-baja:hover:not(:disabled) {
+    border-color: #dc2626;
+    background: #fee2e2;
+}
+
+.btn-accion:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading y empty states */
+.loading, .empty-state, .error {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.error {
+    color: var(--danger-color);
 }

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administracion - Freest Travel</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://freest.com.br/wp-content/uploads/2022/06/logo-site-1-1-1024x188.png" alt="Freest Travel" class="logo">
+            <h1><span class="text-primary" data-i18n="panelDe">Panel de</span> <span class="text-secondary" data-i18n="administracion">Administración</span></h1>
+            <div class="header-actions">
+                <div class="idioma-switch">
+                    <button type="button" class="bandera active" data-idioma="es" title="Español" onclick="cambiarIdioma('es')">🇦🇷</button>
+                    <button type="button" class="bandera" data-idioma="pt" title="Português" onclick="cambiarIdioma('pt')">🇧🇷</button>
+                </div>
+                <button type="button" class="btn-logout" onclick="cerrarSesion()" title="Cerrar sesion">
+                    <span id="usuarioNombre"></span> ✕
+                </button>
+            </div>
+        </header>
+
+        <!-- Vista Landing -->
+        <section id="adminLanding" class="admin-landing">
+            <div class="admin-cards">
+                <a href="/" class="admin-card admin-card-presupuesto">
+                    <div class="admin-card-icon">📋</div>
+                    <h2 data-i18n="generarPresupuesto">Generar Presupuesto</h2>
+                    <p data-i18n="crearNuevoPresupuesto">Crear un nuevo presupuesto de viaje</p>
+                </a>
+                <button type="button" class="admin-card admin-card-dashboard" onclick="mostrarDashboard()">
+                    <div class="admin-card-icon">📊</div>
+                    <h2>Dashboard</h2>
+                    <p data-i18n="verVentasGestionar">Ver ventas y gestionar usuarios</p>
+                </button>
+            </div>
+        </section>
+
+        <!-- Vista Dashboard -->
+        <section id="dashboardSection" class="dashboard-section" style="display:none;">
+            <button type="button" class="btn-volver" onclick="mostrarLanding()" data-i18n="volver">← Volver</button>
+
+            <!-- Tracking de Ventas -->
+            <div class="form-section">
+                <h2 data-i18n="trackingVentas">Tracking de Ventas por Agente</h2>
+
+                <!-- Filtro de periodo -->
+                <div class="filtro-periodo">
+                    <button type="button" class="active" data-periodo="todos" onclick="cambiarPeriodo('todos')" data-i18n="todos">Todos</button>
+                    <button type="button" data-periodo="anio" onclick="cambiarPeriodo('anio')" data-i18n="esteAnio">Este Año</button>
+                    <button type="button" data-periodo="mes" onclick="cambiarPeriodo('mes')" data-i18n="esteMes">Este Mes</button>
+                    <button type="button" data-periodo="7dias" onclick="cambiarPeriodo('7dias')" data-i18n="ultimos7Dias">Últimos 7 días</button>
+                    <button type="button" data-periodo="hoy" onclick="cambiarPeriodo('hoy')" data-i18n="hoy">Hoy</button>
+                </div>
+
+                <div id="ventasContainer">
+                    <div class="loading" data-i18n="cargando">Cargando...</div>
+                </div>
+            </div>
+
+            <!-- Gestion de Usuarios -->
+            <div class="form-section">
+                <div class="usuarios-header">
+                    <h2 data-i18n="gestionUsuarios">Gestión de Usuarios</h2>
+                    <button type="button" class="btn-export btn-guardar" onclick="abrirModalNuevoUsuario()" data-i18n="nuevoAgente">+ Nuevo Agente</button>
+                </div>
+                <div id="usuariosContainer">
+                    <div class="loading" data-i18n="cargando">Cargando...</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Usuario -->
+    <div id="modalUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalUsuarioTitulo">Nuevo Agente</h2>
+                <button type="button" class="modal-close" onclick="cerrarModalUsuario()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formUsuario" onsubmit="guardarUsuario(event)">
+                    <input type="hidden" id="usuarioId" value="">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="usuarioNombreInput" data-i18n="nombre">Nombre</label>
+                            <input type="text" id="usuarioNombreInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioEmail" data-i18n="email">Email</label>
+                            <input type="email" id="usuarioEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioPassword" data-i18n="contrasena">Contraseña</label>
+                            <input type="password" id="usuarioPassword" minlength="6" placeholder="Min. 6 caracteres">
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioTelefono" data-i18n="telefono">Teléfono</label>
+                            <input type="tel" id="usuarioTelefono">
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioCadastur">Cadastur</label>
+                            <input type="text" id="usuarioCadastur">
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioRol" data-i18n="rol">Rol</label>
+                            <select id="usuarioRol">
+                                <option value="agente">Agente</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top:20px;">
+                        <button type="button" class="btn-export" onclick="cerrarModalUsuario()" data-i18n="cancelar">Cancelar</button>
+                        <button type="submit" class="btn-export btn-guardar" data-i18n="guardar">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastContainer"></div>
+
+    <script src="js/api-client.js"></script>
+    <script>
+        // ==================== VARIABLES GLOBALES ====================
+        let usuariosCargados = [];
+        let estadisticasCargadas = [];
+        let periodoActual = 'todos';
+        let idiomaActual = localStorage.getItem('idioma') || 'es';
+
+        // ==================== TRADUCCIONES ====================
+        const TRADUCCIONES = {
+            es: {
+                panelDe: 'Panel de',
+                administracion: 'Administración',
+                generarPresupuesto: 'Generar Presupuesto',
+                crearNuevoPresupuesto: 'Crear un nuevo presupuesto de viaje',
+                verVentasGestionar: 'Ver ventas y gestionar usuarios',
+                volver: '← Volver',
+                trackingVentas: 'Tracking de Ventas por Agente',
+                todos: 'Todos',
+                esteAnio: 'Este Año',
+                esteMes: 'Este Mes',
+                ultimos7Dias: 'Últimos 7 días',
+                hoy: 'Hoy',
+                gestionUsuarios: 'Gestión de Usuarios',
+                nuevoAgente: '+ Nuevo Agente',
+                cargando: 'Cargando...',
+                editar: 'Editar',
+                darDeBaja: 'Dar de baja',
+                agente: 'Agente',
+                presupuestos: 'Presupuestos',
+                vendidos: 'Vendidos',
+                totalUSD: 'Total USD',
+                totalBRL: 'Total BRL',
+                sinPresupuestosVendidos: 'Sin presupuestos vendidos en este período',
+                noHayDatos: 'No hay datos de ventas para este período',
+                noHayUsuarios: 'No hay usuarios activos',
+                nuevoUsuario: 'Nuevo Agente',
+                editarUsuario: 'Editar Usuario',
+                nombre: 'Nombre',
+                email: 'Email',
+                contrasena: 'Contraseña',
+                telefono: 'Teléfono',
+                rol: 'Rol',
+                cancelar: 'Cancelar',
+                guardar: 'Guardar'
+            },
+            pt: {
+                panelDe: 'Painel de',
+                administracion: 'Administração',
+                generarPresupuesto: 'Gerar Orçamento',
+                crearNuevoPresupuesto: 'Criar um novo orçamento de viagem',
+                verVentasGestionar: 'Ver vendas e gerenciar usuários',
+                volver: '← Voltar',
+                trackingVentas: 'Tracking de Vendas por Agente',
+                todos: 'Todos',
+                esteAnio: 'Este Ano',
+                esteMes: 'Este Mês',
+                ultimos7Dias: 'Últimos 7 dias',
+                hoy: 'Hoje',
+                gestionUsuarios: 'Gestão de Usuários',
+                nuevoAgente: '+ Novo Agente',
+                cargando: 'Carregando...',
+                editar: 'Editar',
+                darDeBaja: 'Desativar',
+                agente: 'Agente',
+                presupuestos: 'Orçamentos',
+                vendidos: 'Vendidos',
+                totalUSD: 'Total USD',
+                totalBRL: 'Total BRL',
+                sinPresupuestosVendidos: 'Sem orçamentos vendidos neste período',
+                noHayDatos: 'Não há dados de vendas para este período',
+                noHayUsuarios: 'Não há usuários ativos',
+                nuevoUsuario: 'Novo Agente',
+                editarUsuario: 'Editar Usuário',
+                nombre: 'Nome',
+                email: 'E-mail',
+                contrasena: 'Senha',
+                telefono: 'Telefone',
+                rol: 'Função',
+                cancelar: 'Cancelar',
+                guardar: 'Salvar'
+            }
+        };
+
+        function t(key) {
+            return TRADUCCIONES[idiomaActual]?.[key] || TRADUCCIONES['es'][key] || key;
+        }
+
+        function cambiarIdioma(idioma) {
+            idiomaActual = idioma;
+            localStorage.setItem('idioma', idioma);
+
+            // Actualizar botones
+            document.querySelectorAll('.bandera').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.idioma === idioma);
+            });
+
+            // Actualizar textos con data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.textContent = t(key);
+            });
+
+            // Re-renderizar tablas dinámicas si están visibles
+            if (document.getElementById('dashboardSection').style.display !== 'none') {
+                if (estadisticasCargadas.length > 0) {
+                    renderizarTablaVentas(estadisticasCargadas, calcularTotales(estadisticasCargadas));
+                }
+                if (usuariosCargados.length > 0) {
+                    renderizarListaUsuarios(usuariosCargados);
+                }
+            }
+        }
+
+        function calcularTotales(datos) {
+            return datos.reduce((acc, agente) => ({
+                presupuestos: acc.presupuestos + (agente.total_presupuestos || 0),
+                vendidos: acc.vendidos + (agente.total_vendidos || 0),
+                vendido_usd: acc.vendido_usd + (agente.vendido_usd || 0),
+                vendido_brl: acc.vendido_brl + (agente.vendido_brl || 0)
+            }), { presupuestos: 0, vendidos: 0, vendido_usd: 0, vendido_brl: 0 });
+        }
+
+        // ==================== INICIALIZACION ====================
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar sesion y permisos
+            const usuario = await verificarSesion();
+            if (!usuario) {
+                window.location.href = '/login.html';
+                return;
+            }
+            if (usuario.rol !== 'admin') {
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar nombre en header
+            document.getElementById('usuarioNombre').textContent = usuario.nombre || usuario.email;
+
+            // Aplicar idioma guardado
+            cambiarIdioma(idiomaActual);
+        });
+
+        // ==================== NAVEGACION ====================
+        function mostrarDashboard() {
+            document.getElementById('adminLanding').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            cargarDashboard();
+        }
+
+        function mostrarLanding() {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('adminLanding').style.display = 'block';
+        }
+
+        // ==================== DASHBOARD ====================
+        async function cargarDashboard() {
+            await Promise.all([
+                cargarEstadisticasVentasUI(),
+                cargarUsuariosUI()
+            ]);
+        }
+
+        // ==================== ESTADISTICAS ====================
+        function cambiarPeriodo(periodo) {
+            periodoActual = periodo;
+
+            // Actualizar botones activos
+            document.querySelectorAll('.filtro-periodo button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.periodo === periodo);
+            });
+
+            cargarEstadisticasVentasUI();
+        }
+
+        async function cargarEstadisticasVentasUI() {
+            const container = document.getElementById('ventasContainer');
+            container.innerHTML = '<div class="loading">Cargando...</div>';
+
+            try {
+                const resultado = await obtenerEstadisticasVentas(periodoActual);
+                if (resultado.success) {
+                    estadisticasCargadas = resultado.data;
+                    renderizarTablaVentas(resultado.data, resultado.totales);
+                } else {
+                    container.innerHTML = '<div class="error">Error al cargar estadisticas</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="error">Error de conexion</div>';
+            }
+        }
+
+        function renderizarTablaVentas(datos, totales) {
+            const container = document.getElementById('ventasContainer');
+
+            if (!datos || datos.length === 0) {
+                container.innerHTML = `<div class="empty-state">${t('noHayDatos')}</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>${t('agente')}</th>
+                            <th>${t('presupuestos')}</th>
+                            <th>${t('vendidos')}</th>
+                            <th>${t('totalUSD')}</th>
+                            <th>${t('totalBRL')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${datos.map((agente, index) => `
+                            <tr onclick="toggleDetalle(${index})">
+                                <td>
+                                    <span class="usuario-rol badge-${agente.agente_rol}">${agente.agente_rol}</span>
+                                    ${agente.agente_nombre}
+                                </td>
+                                <td>${agente.total_presupuestos || 0}</td>
+                                <td><strong>${agente.total_vendidos || 0}</strong></td>
+                                <td>${formatearMoneda(agente.vendido_usd, 'USD')}</td>
+                                <td>${formatearMoneda(agente.vendido_brl, 'BRL')}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" style="padding:0;">
+                                    <div class="detalle-agente" id="detalle-${index}">
+                                        ${renderizarDetalleAgente(agente.presupuestos)}
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr class="totales-row">
+                            <td><strong>TOTAL</strong></td>
+                            <td><strong>${totales.presupuestos || 0}</strong></td>
+                            <td><strong>${totales.vendidos || 0}</strong></td>
+                            <td><strong>${formatearMoneda(totales.vendido_usd, 'USD')}</strong></td>
+                            <td><strong>${formatearMoneda(totales.vendido_brl, 'BRL')}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+        }
+
+        function renderizarDetalleAgente(presupuestos) {
+            if (!presupuestos || presupuestos.length === 0) {
+                return `<p style="padding:15px;color:var(--text-secondary);">${t('sinPresupuestosVendidos')}</p>`;
+            }
+
+            return `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha Venta</th>
+                            <th>Cliente</th>
+                            <th>${t('telefono')}</th>
+                            <th>Ciudad</th>
+                            <th>Destino</th>
+                            <th>Pax</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${presupuestos.map(p => `
+                            <tr>
+                                <td>${p.numero}</td>
+                                <td>${formatearFecha(p.fecha_venta)}</td>
+                                <td>${p.cliente_nombre || '-'}</td>
+                                <td>${p.cliente_telefono || '-'}</td>
+                                <td>${p.cliente_ciudad || '-'}</td>
+                                <td>${p.destino_final || '-'}</td>
+                                <td>${p.cantidad_pasajeros || 1}</td>
+                                <td>${formatearMoneda(p.valor_total, p.moneda)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function toggleDetalle(index) {
+            const detalle = document.getElementById(`detalle-${index}`);
+            if (detalle) {
+                detalle.classList.toggle('show');
+            }
+        }
+
+        // ==================== USUARIOS ====================
+        async function cargarUsuariosUI() {
+            const container = document.getElementById('usuariosContainer');
+            container.innerHTML = '<div class="loading">Cargando...</div>';
+
+            try {
+                const resultado = await obtenerUsuarios();
+                if (resultado.success) {
+                    usuariosCargados = resultado.data;
+                    renderizarListaUsuarios(resultado.data);
+                } else {
+                    container.innerHTML = '<div class="error">Error al cargar usuarios</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="error">Error de conexion</div>';
+            }
+        }
+
+        function renderizarListaUsuarios(usuarios) {
+            const container = document.getElementById('usuariosContainer');
+
+            // Filtrar solo activos y ordenar
+            const activos = usuarios
+                .filter(u => u.activo)
+                .sort((a, b) => {
+                    if (a.rol === b.rol) return a.nombre.localeCompare(b.nombre);
+                    return a.rol === 'admin' ? -1 : 1;
+                });
+
+            if (activos.length === 0) {
+                container.innerHTML = `<div class="empty-state">${t('noHayUsuarios')}</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="usuarios-lista">
+                    ${activos.map(usuario => `
+                        <div class="usuario-item ${usuario.rol === 'admin' ? 'is-admin' : ''}">
+                            <div class="usuario-info">
+                                <span class="usuario-nombre">${usuario.nombre}</span>
+                                <span class="usuario-email">${usuario.email}</span>
+                                <span class="usuario-rol badge-${usuario.rol}">${usuario.rol}</span>
+                            </div>
+                            <div class="usuario-actions">
+                                <button type="button" class="btn-accion" onclick="editarUsuario(${usuario.id})">${t('editar')}</button>
+                                <button type="button" class="btn-accion btn-dar-baja" onclick="darDeBajaUsuario(${usuario.id}, '${usuario.nombre}')" ${usuario.rol === 'admin' ? 'disabled title="No puedes dar de baja a un admin"' : ''}>${t('darDeBaja')}</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // ==================== MODAL USUARIO ====================
+        function abrirModalNuevoUsuario() {
+            document.getElementById('modalUsuarioTitulo').textContent = t('nuevoUsuario');
+            document.getElementById('formUsuario').reset();
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('usuarioPassword').required = true;
+            document.getElementById('usuarioPassword').placeholder = idiomaActual === 'pt' ? 'Min. 6 caracteres (obrigatório)' : 'Min. 6 caracteres (requerido)';
+            document.getElementById('modalUsuario').classList.add('active');
+        }
+
+        function editarUsuario(id) {
+            const usuario = usuariosCargados.find(u => u.id === id);
+            if (!usuario) return;
+
+            document.getElementById('modalUsuarioTitulo').textContent = t('editarUsuario');
+            document.getElementById('usuarioId').value = usuario.id;
+            document.getElementById('usuarioNombreInput').value = usuario.nombre;
+            document.getElementById('usuarioEmail').value = usuario.email;
+            document.getElementById('usuarioPassword').value = '';
+            document.getElementById('usuarioPassword').required = false;
+            document.getElementById('usuarioPassword').placeholder = idiomaActual === 'pt' ? 'Deixe vazio para não alterar' : 'Dejar vacío para no cambiar';
+            document.getElementById('usuarioTelefono').value = usuario.telefono || '';
+            document.getElementById('usuarioCadastur').value = usuario.cadastur || '';
+            document.getElementById('usuarioRol').value = usuario.rol;
+
+            document.getElementById('modalUsuario').classList.add('active');
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('modalUsuario').classList.remove('active');
+        }
+
+        async function guardarUsuario(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('usuarioId').value;
+            const datos = {
+                nombre: document.getElementById('usuarioNombreInput').value,
+                email: document.getElementById('usuarioEmail').value,
+                telefono: document.getElementById('usuarioTelefono').value,
+                cadastur: document.getElementById('usuarioCadastur').value,
+                rol: document.getElementById('usuarioRol').value
+            };
+
+            const password = document.getElementById('usuarioPassword').value;
+            if (password) {
+                datos.password = password;
+            }
+
+            try {
+                let resultado;
+                if (id) {
+                    resultado = await actualizarUsuario(id, datos);
+                } else {
+                    if (!password) {
+                        showToast('La contrasena es requerida para nuevos usuarios', 'error');
+                        return;
+                    }
+                    resultado = await crearUsuario(datos);
+                }
+
+                if (resultado.success) {
+                    showToast(id ? 'Usuario actualizado' : 'Usuario creado', 'success');
+                    cerrarModalUsuario();
+                    cargarUsuariosUI();
+                    cargarEstadisticasVentasUI(); // Refrescar estadisticas
+                } else {
+                    showToast(resultado.error || 'Error al guardar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexion', 'error');
+            }
+        }
+
+        async function darDeBajaUsuario(id, nombre) {
+            if (!confirm(`¿Estas seguro de dar de baja a ${nombre}? El usuario no podra acceder al sistema.`)) {
+                return;
+            }
+
+            try {
+                const resultado = await eliminarUsuario(id);
+                if (resultado.success) {
+                    showToast('Usuario dado de baja', 'success');
+                    cargarUsuariosUI();
+                    cargarEstadisticasVentasUI();
+                } else {
+                    showToast(resultado.error || 'Error al dar de baja', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexion', 'error');
+            }
+        }
+
+        // ==================== UTILIDADES ====================
+        function formatearMoneda(valor, moneda) {
+            if (!valor && valor !== 0) return '-';
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: moneda || 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(valor);
+        }
+
+        function formatearFecha(fechaISO) {
+            if (!fechaISO) return '-';
+            const fecha = new Date(fechaISO);
+            return fecha.toLocaleDateString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

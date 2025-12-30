@@ -5,6 +5,15 @@ async function exportarPDF() {
     console.log('=== INICIANDO EXPORTAR PDF ===');
 
     try {
+        // Validar formulario antes de exportar
+        if (typeof validarFormulario === 'function') {
+            const esValido = validarFormulario();
+            if (!esValido) {
+                console.log('Formulario inválido, cancelando exportación');
+                return;
+            }
+        }
+
         const datos = recolectarDatos();
         console.log('Datos recolectados:', datos);
 
@@ -16,34 +25,76 @@ async function exportarPDF() {
                 body: JSON.stringify(datos)
             });
 
-            if (response.ok) {
-                // Descargar el PDF
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `presupuesto_${datos.presupuesto.numero || 'sin-numero'}_${datos.cliente.nombre || 'cliente'}.pdf`.replace(/\s+/g, '_');
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+            // Manejar errores HTTP específicos
+            if (!response.ok) {
+                const errorMsg = `HTTP ${response.status}`;
+                console.error('Error del servidor:', errorMsg);
 
-                if (typeof showToast === 'function') {
-                    showToast('PDF exportado correctamente (Puppeteer)');
+                // Si es error 413 (payload muy grande), mostrar error amigable
+                if (response.status === 413) {
+                    if (typeof mostrarErrorAmigable === 'function') {
+                        mostrarErrorAmigable('413 Payload Too Large');
+                    } else {
+                        showToast('La imagen es muy grande. Intentá con una más pequeña.', 'error');
+                    }
+                    return;
                 }
-                console.log('=== PDF EXPORTADO (PUPPETEER) ===');
+
+                // Si es error 500, mostrar error amigable
+                if (response.status === 500) {
+                    if (typeof mostrarErrorAmigable === 'function') {
+                        mostrarErrorAmigable('500 Internal Server Error');
+                    } else {
+                        showToast('Error del servidor. Revisá los datos e intentá de nuevo.', 'error');
+                    }
+                    return;
+                }
+
+                // Otros errores, intentar fallback
+                throw new Error(errorMsg);
+            }
+
+            // Descargar el PDF
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `presupuesto_${datos.presupuesto.numero || 'sin-numero'}_${datos.cliente.nombre || 'cliente'}.pdf`.replace(/\s+/g, '_');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            if (typeof showToast === 'function') {
+                showToast('PDF exportado correctamente', 'success');
+            }
+            console.log('=== PDF EXPORTADO (PUPPETEER) ===');
+            return;
+
+        } catch (serverError) {
+            console.log('Error con servidor Puppeteer:', serverError.message);
+
+            // Si es un error de red (servidor no disponible), intentar fallback
+            if (serverError.message === 'Failed to fetch' || serverError.name === 'TypeError') {
+                console.log('Servidor no disponible, usando jsPDF fallback');
+                await exportarPDFjsPDF(datos);
                 return;
             }
-        } catch (serverError) {
-            console.log('Servidor no disponible, usando jsPDF fallback');
-        }
 
-        // Fallback a jsPDF si el servidor no está disponible
-        await exportarPDFjsPDF(datos);
+            // Si es otro tipo de error, propagarlo
+            throw serverError;
+        }
 
     } catch (error) {
         console.error('ERROR EN EXPORTAR PDF:', error);
-        alert('Error al generar PDF: ' + error.message);
+
+        // Usar el sistema de errores amigables
+        if (typeof mostrarErrorAmigable === 'function') {
+            mostrarErrorAmigable(error.message || error.toString());
+        } else {
+            // Fallback al toast si no está disponible mostrarErrorAmigable
+            showToast('Error al generar el PDF. Revisá los datos e intentá de nuevo.', 'error');
+        }
     }
 }
 
@@ -118,8 +169,8 @@ async function exportarPDFjsPDF(datos) {
 
     const primerVuelo = datos.vuelos[0] || {};
     const ultimoVuelo = datos.vuelos[datos.vuelos.length - 1] || primerVuelo;
-    const origen = datos.cliente.ciudad || primerVuelo.origen || 'Origen';
-    const destino = ultimoVuelo.destino || 'Destino';
+    const origen = primerVuelo.origen || 'Origen';
+    const destino = datos.cliente.destinoFinal || ultimoVuelo.destino || 'Destino';
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -128,8 +179,11 @@ async function exportarPDFjsPDF(datos) {
 
     const pax = datos.cliente.cantidadPasajeros || 1;
     let subTexto = `${pax} adulto${pax > 1 ? 's' : ''}`;
-    if (datos.incluyeTransfer) subTexto += ': Transfer IN / OUT';
-    if (datos.incluyeSeguro) subTexto += (datos.incluyeTransfer ? ' + ' : ': ') + 'Seguro de Viaje';
+    const servicios = [];
+    if (datos.incluyeTransfer) servicios.push('Transfer');
+    if (datos.incluyeSeguro) servicios.push('Seguro de Viaje');
+    if (datos.incluyeVehiculo) servicios.push('Alquiler de Vehículo');
+    if (servicios.length > 0) subTexto += ': ' + servicios.join(' + ');
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -199,6 +253,14 @@ async function exportarPDFjsPDF(datos) {
 
         datos.vuelos.forEach((v, idx) => {
             if (v.numero || v.origen) {
+                const esVueloIda = v.tipo === 'ida' || !v.tipo;
+
+                // Para vuelta, invertir origen/destino visualmente
+                const izqCodigo = esVueloIda ? v.origen : v.destino;
+                const izqHora = esVueloIda ? v.horaSalida : v.horaLlegada;
+                const derCodigo = esVueloIda ? v.destino : v.origen;
+                const derHora = esVueloIda ? v.horaLlegada : v.horaSalida;
+
                 if (v.aerolinea) {
                     doc.setFillColor(...AZUL);
                     doc.roundedRect(MARGIN, y, 18, 4, 1, 1, 'F');
@@ -212,11 +274,11 @@ async function exportarPDFjsPDF(datos) {
                 doc.setFontSize(14);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(...TEXTO_PRIMARIO);
-                doc.text(v.horaSalida || '--:--', MARGIN + 25, y, { align: 'center' });
+                doc.text(izqHora || '--:--', MARGIN + 25, y, { align: 'center' });
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...TEXTO_SECUNDARIO);
-                doc.text(v.origen || '---', MARGIN + 25, y + 5, { align: 'center' });
+                doc.text(izqCodigo || '---', MARGIN + 25, y + 5, { align: 'center' });
 
                 const xC = PAGE_WIDTH / 2;
                 doc.text(v.duracion || '', xC, y - 3, { align: 'center' });
@@ -229,7 +291,7 @@ async function exportarPDFjsPDF(datos) {
 
                 doc.setFontSize(12);
                 doc.setTextColor(...AZUL);
-                doc.text('✈', idx === 0 ? PAGE_WIDTH - MARGIN - 50 : MARGIN + 50, y + 1);
+                doc.text('✈', esVueloIda ? PAGE_WIDTH - MARGIN - 50 : MARGIN + 50, y + 1);
 
                 doc.setFontSize(7);
                 doc.setTextColor(...NARANJA);
@@ -238,11 +300,11 @@ async function exportarPDFjsPDF(datos) {
                 doc.setFontSize(14);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(...TEXTO_PRIMARIO);
-                doc.text(v.horaLlegada || '--:--', PAGE_WIDTH - MARGIN - 25, y, { align: 'center' });
+                doc.text(derHora || '--:--', PAGE_WIDTH - MARGIN - 25, y, { align: 'center' });
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...TEXTO_SECUNDARIO);
-                doc.text(v.destino || '---', PAGE_WIDTH - MARGIN - 25, y + 5, { align: 'center' });
+                doc.text(derCodigo || '---', PAGE_WIDTH - MARGIN - 25, y + 5, { align: 'center' });
 
                 y += 12;
             }

@@ -1,16 +1,190 @@
 // Variable para almacenar presupuestos cargados
 let presupuestosCargados = [];
 
+// ==================== SISTEMA DE IDIOMAS ====================
+let idiomaActual = localStorage.getItem('idioma') || 'es';
+
+const TRADUCCIONES = {
+    es: {
+        // Header
+        presupuesto: 'Presupuesto',
+        deViaje: 'de Viaje',
+        // Secciones
+        datosAgente: 'Datos del Agente',
+        datosCliente: 'Datos del Cliente',
+        datosPresupuesto: 'Datos del Presupuesto',
+        // Labels Agente
+        nombreAgente: 'Nombre del Agente',
+        emailAgente: 'Email del Agente',
+        telefonoAgente: 'Teléfono Agente',
+        // Labels Cliente
+        nombreCliente: 'Nombre del Cliente',
+        telefonoCliente: 'Teléfono Cliente',
+        ciudadCliente: 'Ciudad del Cliente',
+        destinoFinal: 'Destino Final',
+        cantidadPasajeros: 'Cantidad de Pasajeros',
+        // Labels Presupuesto
+        numeroPresupuesto: 'Número de Presupuesto',
+        fechaPresupuesto: 'Fecha de Presupuesto',
+        tipoViaje: 'Tipo de Viaje',
+        tipoTarifa: 'Tipo de Tarifa',
+        seleccionar: 'Seleccionar...',
+        soloIda: 'Solo Ida',
+        idaVuelta: 'Ida y Vuelta',
+        multiDestino: 'Multi-destino',
+        // Tarifas
+        tarifaBasic: 'Solo mochila',
+        tarifaLight: 'Mochila + Carry on',
+        tarifaFull: 'Mochila + Carry on + Valija 23kg',
+        // Vuelos
+        vuelosIda: 'Vuelos de Ida',
+        vuelosVuelta: 'Vuelos de Vuelta',
+        vuelos: 'Vuelos',
+        agregarIda: '+ Agregar Ida',
+        agregarVuelta: '+ Agregar Vuelta',
+        agregarVuelo: '+ Agregar Vuelo',
+        // Hospedaje
+        hospedaje: 'Hospedaje',
+        agregarHotel: '+ Agregar Hotel',
+        // Servicios
+        incluyeTransfer: '¿Incluye Transfer?',
+        seguroViaje: 'Seguro de Viaje',
+        incluyeSeguro: '¿Incluye Seguro?',
+        alquilerVehiculo: 'Alquiler de Vehículo',
+        incluyeVehiculo: '¿Incluye Alquiler de Vehículo?',
+        si: 'Sí',
+        no: 'No',
+        // Valores
+        valores: 'Valores',
+        moneda: 'Moneda',
+        valorPorPersona: 'Valor por Persona',
+        valorTotal: 'Valor Total',
+        // Botones
+        guardar: 'Guardar',
+        historial: 'Historial',
+        exportarPDF: 'Exportar PDF',
+        exportarExcel: 'Exportar Excel'
+    },
+    pt: {
+        // Header
+        presupuesto: 'Orçamento',
+        deViaje: 'de Viagem',
+        // Secciones
+        datosAgente: 'Dados do Agente',
+        datosCliente: 'Dados do Cliente',
+        datosPresupuesto: 'Dados do Orçamento',
+        // Labels Agente
+        nombreAgente: 'Nome do Agente',
+        emailAgente: 'Email do Agente',
+        telefonoAgente: 'Telefone Agente',
+        // Labels Cliente
+        nombreCliente: 'Nome do Cliente',
+        telefonoCliente: 'Telefone Cliente',
+        ciudadCliente: 'Cidade do Cliente',
+        destinoFinal: 'Destino Final',
+        cantidadPasajeros: 'Quantidade de Passageiros',
+        // Labels Presupuesto
+        numeroPresupuesto: 'Número do Orçamento',
+        fechaPresupuesto: 'Data do Orçamento',
+        tipoViaje: 'Tipo de Viagem',
+        tipoTarifa: 'Tipo de Tarifa',
+        seleccionar: 'Selecionar...',
+        soloIda: 'Só Ida',
+        idaVuelta: 'Ida e Volta',
+        multiDestino: 'Multi-destino',
+        // Tarifas
+        tarifaBasic: 'Só mochila',
+        tarifaLight: 'Mochila + Carry on',
+        tarifaFull: 'Mochila + Carry on + Mala 23kg',
+        // Vuelos
+        vuelosIda: 'Voos de Ida',
+        vuelosVuelta: 'Voos de Volta',
+        vuelos: 'Voos',
+        agregarIda: '+ Adicionar Ida',
+        agregarVuelta: '+ Adicionar Volta',
+        agregarVuelo: '+ Adicionar Voo',
+        // Hospedaje
+        hospedaje: 'Hospedagem',
+        agregarHotel: '+ Adicionar Hotel',
+        // Servicios
+        incluyeTransfer: 'Inclui Transfer?',
+        seguroViaje: 'Seguro Viagem',
+        incluyeSeguro: 'Inclui Seguro?',
+        alquilerVehiculo: 'Aluguel de Veículo',
+        incluyeVehiculo: 'Inclui Aluguel de Veículo?',
+        si: 'Sim',
+        no: 'Não',
+        // Valores
+        valores: 'Valores',
+        moneda: 'Moeda',
+        valorPorPersona: 'Valor por Pessoa',
+        valorTotal: 'Valor Total',
+        // Botones
+        guardar: 'Salvar',
+        historial: 'Histórico',
+        exportarPDF: 'Exportar PDF',
+        exportarExcel: 'Exportar Excel'
+    }
+};
+
+function cambiarIdioma(idioma) {
+    idiomaActual = idioma;
+    localStorage.setItem('idioma', idioma);
+
+    // Actualizar clases de banderas
+    document.querySelectorAll('.bandera').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.idioma === idioma);
+    });
+
+    // Traducir todos los elementos con data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (TRADUCCIONES[idioma][key]) {
+            el.textContent = TRADUCCIONES[idioma][key];
+        }
+    });
+}
+
+// Aplicar idioma guardado al cargar
+function aplicarIdiomaGuardado() {
+    const idioma = localStorage.getItem('idioma') || 'es';
+    cambiarIdioma(idioma);
+}
+
 // Inicialización
-document.addEventListener('DOMContentLoaded', () => {
-    initForm();
-    initFirebase();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initForm();
+    // initFirebase() ya no es necesario - usamos api-client.js
+    aplicarIdiomaGuardado();
+    cargarDatosUsuario();
 });
 
+// Cargar datos del usuario logueado
+function cargarDatosUsuario() {
+    const usuario = getUsuarioActual();
+    if (usuario) {
+        // Mostrar nombre en el header
+        const nombreSpan = document.getElementById('usuarioNombre');
+        if (nombreSpan) {
+            nombreSpan.textContent = usuario.nombre || usuario.email;
+        }
+
+        // Mostrar botón "Volver al Admin" si es admin
+        const btnAdmin = document.getElementById('btnVolverAdmin');
+        if (btnAdmin && usuario.rol === 'admin') {
+            btnAdmin.style.display = 'inline-block';
+        }
+
+        // Cargar datos del agente desde el usuario
+        document.getElementById('nombreAgente').value = usuario.nombre || '';
+        document.getElementById('emailAgente').value = usuario.email || '';
+        document.getElementById('telefonoAgente').value = usuario.telefono || '';
+        document.getElementById('cadastur').value = usuario.cadastur || '37.286.620/0001-49';
+    }
+}
+
 function initForm() {
-    // Cargar datos estáticos del agente
-    document.getElementById('emailAgente').value = CONFIG.AGENTE.email;
-    document.getElementById('cadastur').value = CONFIG.AGENTE.cadastur;
+    // Los datos del agente se cargan desde el usuario logueado en cargarDatosUsuario()
 
     // Fecha de presupuesto por defecto: hoy
     document.getElementById('fechaPresupuesto').valueAsDate = new Date();
@@ -80,15 +254,31 @@ let vueloCount = 0;
 let hotelCount = 0;
 
 // Agregar vuelo dinámico
-function agregarVuelo(label = null) {
+function agregarVuelo(tipo = 'ida') {
     vueloCount++;
-    const container = document.getElementById('vuelosContainer');
     const template = document.getElementById('vueloTemplate');
     const clone = template.content.cloneNode(true);
 
-    // Usar label personalizado o número
-    const itemNumber = clone.querySelector('.item-number');
-    itemNumber.textContent = label || vueloCount;
+    // Determinar contenedor y label según tipo
+    let container;
+    let labelTexto;
+
+    if (tipo === 'ida') {
+        container = document.getElementById('vuelosIdaContainer');
+        labelTexto = 'Ida ' + (document.querySelectorAll('#vuelosIdaContainer .vuelo-item').length + 1);
+    } else if (tipo === 'vuelta') {
+        container = document.getElementById('vuelosVueltaContainer');
+        labelTexto = 'Vuelta ' + (document.querySelectorAll('#vuelosVueltaContainer .vuelo-item').length + 1);
+    } else { // multi
+        container = document.getElementById('vuelosMultiContainer');
+        labelTexto = document.querySelectorAll('#vuelosMultiContainer .vuelo-item').length + 1;
+        // Mostrar selector de tipo en multi-destino
+        clone.querySelector('.vuelo-tipo-selector').style.display = 'flex';
+    }
+
+    // Asignar label y tipo
+    clone.querySelector('.item-number').textContent = labelTexto;
+    clone.querySelector('.vuelo-tipo').value = tipo === 'multi' ? 'ida' : tipo;
 
     // Configurar fecha mínima (hoy) - mantener disabled
     const fechaInput = clone.querySelector('.vuelo-fecha');
@@ -103,10 +293,17 @@ function agregarVuelo(label = null) {
     container.appendChild(clone);
 }
 
+// Actualizar tipo de vuelo cuando cambia el selector (multi-destino)
+function actualizarTipoVuelo(select) {
+    const vueloItem = select.closest('.vuelo-item');
+    vueloItem.querySelector('.vuelo-tipo').value = select.value;
+}
+
 // Limpiar todos los vuelos
 function limpiarVuelos() {
-    const container = document.getElementById('vuelosContainer');
-    container.innerHTML = '';
+    document.getElementById('vuelosIdaContainer').innerHTML = '';
+    document.getElementById('vuelosVueltaContainer').innerHTML = '';
+    document.getElementById('vuelosMultiContainer').innerHTML = '';
     vueloCount = 0;
 }
 
@@ -114,7 +311,11 @@ function limpiarVuelos() {
 function actualizarVuelosPorTipo() {
     const tipoViaje = document.getElementById('tipoViaje').value;
     const seccionVuelos = document.getElementById('seccionVuelos');
-    const btnAgregar = document.getElementById('btnAgregarVuelo');
+
+    // Ocultar todas las sub-secciones
+    document.getElementById('seccionVuelosIda').style.display = 'none';
+    document.getElementById('seccionVuelosVuelta').style.display = 'none';
+    document.getElementById('seccionVuelosMulti').style.display = 'none';
 
     // Limpiar vuelos existentes
     limpiarVuelos();
@@ -130,23 +331,24 @@ function actualizarVuelosPorTipo() {
 
     switch (tipoViaje) {
         case 'ida':
-            // Solo ida: 1 vuelo, sin botón agregar
-            agregarVuelo('Ida');
-            btnAgregar.style.display = 'none';
+            // Solo ida: sección de ida con botón agregar
+            document.getElementById('seccionVuelosIda').style.display = 'block';
+            agregarVuelo('ida');
             break;
 
         case 'idaVuelta':
-            // Ida y vuelta: 2 vuelos, sin botón agregar
-            agregarVuelo('Ida');
-            agregarVuelo('Vuelta');
-            btnAgregar.style.display = 'none';
+            // Ida y vuelta: dos secciones separadas
+            document.getElementById('seccionVuelosIda').style.display = 'block';
+            document.getElementById('seccionVuelosVuelta').style.display = 'block';
+            agregarVuelo('ida');
+            agregarVuelo('vuelta');
             break;
 
         case 'multiDestino':
-            // Multi-destino: 2 vuelos iniciales + botón agregar
-            agregarVuelo();
-            agregarVuelo();
-            btnAgregar.style.display = 'inline-flex';
+            // Multi-destino: sección única con selector de tipo por vuelo
+            document.getElementById('seccionVuelosMulti').style.display = 'block';
+            agregarVuelo('multi');
+            agregarVuelo('multi');
             break;
     }
 }
@@ -182,6 +384,22 @@ function agregarHotel() {
 
     fechaEntrada.addEventListener('change', calcularNoches);
     fechaSalida.addEventListener('change', calcularNoches);
+
+    // Listener para convertir imagen a base64
+    const imagenInput = lastItem.querySelector('.hotel-imagen');
+    if (imagenInput) {
+        imagenInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Guardar base64 en un data attribute
+                    imagenInput.dataset.base64 = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
 
 
@@ -215,12 +433,14 @@ function recolectarDatos() {
             nombre: document.getElementById('nombreCliente').value,
             telefono: document.getElementById('telefonoCliente').value,
             ciudad: document.getElementById('ciudadCliente').value,
+            destinoFinal: document.getElementById('destinoFinal').value,
             cantidadPasajeros: document.getElementById('cantidadPasajeros').value
         },
         presupuesto: {
             numero: document.getElementById('numeroPresupuesto').value,
             fecha: document.getElementById('fechaPresupuesto').value,
-            tipoViaje: document.getElementById('tipoViaje').value
+            tipoViaje: document.getElementById('tipoViaje').value,
+            tipoTarifa: document.getElementById('tipoTarifa').value
         },
         vuelos: [],
         hoteles: [],
@@ -233,12 +453,15 @@ function recolectarDatos() {
         valores: {
             porPersona: document.getElementById('valorPorPersona').value,
             total: document.getElementById('valorTotal').value
-        }
+        },
+        // Idioma
+        idioma: idiomaActual
     };
 
     // Recolectar vuelos
     document.querySelectorAll('.vuelo-item').forEach(item => {
         datos.vuelos.push({
+            tipo: item.querySelector('.vuelo-tipo').value,
             numero: item.querySelector('.vuelo-numero').value,
             origen: item.querySelector('.vuelo-origen').value,
             destino: item.querySelector('.vuelo-destino').value,
@@ -253,6 +476,7 @@ function recolectarDatos() {
 
     // Recolectar hoteles
     document.querySelectorAll('.hotel-item').forEach(item => {
+        const imagenInput = item.querySelector('.hotel-imagen');
         datos.hoteles.push({
             nombre: item.querySelector('.hotel-nombre').value,
             url: item.querySelector('.hotel-url').value,
@@ -260,7 +484,8 @@ function recolectarDatos() {
             fechaEntrada: item.querySelector('.hotel-fecha-entrada').value,
             fechaSalida: item.querySelector('.hotel-fecha-salida').value,
             noches: item.querySelector('.hotel-noches').value,
-            regimen: item.querySelector('.hotel-regimen').value
+            regimen: item.querySelector('.hotel-regimen').value,
+            imagen: imagenInput ? imagenInput.dataset.base64 || '' : ''
         });
     });
 
@@ -303,14 +528,18 @@ function formatearMoneda(valor, moneda = null) {
 // ==================== GUARDAR PRESUPUESTO ====================
 
 async function guardarPresupuestoActual() {
+    // Validar formulario antes de guardar
+    if (typeof validarFormulario === 'function') {
+        // Para guardar, solo validamos nombre del cliente (menos estricto que exportar)
+        const nombreCliente = document.getElementById('nombreCliente').value.trim();
+        if (!nombreCliente) {
+            mostrarErrorCampo('nombreCliente', 'Ingresá el nombre del cliente para guardar');
+            return;
+        }
+    }
+
     const datos = recolectarDatos();
     const presupuestoId = document.getElementById('presupuestoId').value;
-
-    // Validación básica
-    if (!datos.cliente.nombre) {
-        showToast('Por favor ingresa el nombre del cliente', 'error');
-        return;
-    }
 
     try {
         let resultado;
@@ -331,10 +560,19 @@ async function guardarPresupuestoActual() {
         }
 
         if (!resultado.success) {
-            showToast('Error: ' + resultado.error, 'error');
+            if (typeof mostrarErrorAmigable === 'function') {
+                mostrarErrorAmigable(resultado.error);
+            } else {
+                showToast('Error al guardar el presupuesto', 'error');
+            }
         }
     } catch (error) {
-        showToast('Error al guardar: ' + error.message, 'error');
+        console.error('Error guardando presupuesto:', error);
+        if (typeof mostrarErrorAmigable === 'function') {
+            mostrarErrorAmigable(error.message || error.toString());
+        } else {
+            showToast('Error al guardar. Verificá tu conexión e intentá de nuevo.', 'error');
+        }
     }
 }
 
@@ -449,6 +687,7 @@ function cargarPresupuestoEnFormulario(presupuesto) {
     document.getElementById('nombreCliente').value = presupuesto.cliente?.nombre || '';
     document.getElementById('telefonoCliente').value = presupuesto.cliente?.telefono || '';
     document.getElementById('ciudadCliente').value = presupuesto.cliente?.ciudad || '';
+    document.getElementById('destinoFinal').value = presupuesto.cliente?.destinoFinal || '';
     document.getElementById('cantidadPasajeros').value = presupuesto.cliente?.cantidadPasajeros || '';
 
     // Datos del presupuesto
@@ -458,6 +697,9 @@ function cargarPresupuestoEnFormulario(presupuesto) {
     // Tipo de viaje y vuelos
     const tipoViaje = presupuesto.presupuesto?.tipoViaje || '';
     document.getElementById('tipoViaje').value = tipoViaje;
+
+    // Tipo de tarifa
+    document.getElementById('tipoTarifa').value = presupuesto.presupuesto?.tipoTarifa || '';
 
     // Limpiar vuelos existentes y recrear según tipo
     limpiarVuelos();
@@ -492,6 +734,11 @@ function cargarPresupuestoEnFormulario(presupuesto) {
     // Valores
     document.getElementById('valorPorPersona').value = presupuesto.valores?.porPersona || '';
     document.getElementById('valorTotal').value = presupuesto.valores?.total || '';
+
+    // Estado de venta
+    const vendido = presupuesto.vendido || false;
+    document.getElementById('presupuestoVendido').value = vendido ? '1' : '0';
+    actualizarUIVendido(vendido);
 
     // Activar modo edición visual
     activarModoEdicion();
@@ -554,11 +801,65 @@ function setToggleValue(inputId, valor) {
 
 function activarModoEdicion() {
     document.body.classList.add('editing-mode');
+    // Mostrar botón de marcar vendido si hay un presupuesto cargado
+    const presupuestoId = document.getElementById('presupuestoId').value;
+    if (presupuestoId) {
+        document.getElementById('btnMarcarVendido').style.display = 'inline-block';
+    }
 }
 
 function desactivarModoEdicion() {
     document.body.classList.remove('editing-mode');
     document.getElementById('presupuestoId').value = '';
+    document.getElementById('presupuestoVendido').value = '0';
+    actualizarUIVendido(false);
+}
+
+// ==================== MARCAR VENDIDO ====================
+
+function actualizarUIVendido(vendido) {
+    const btnVendido = document.getElementById('btnMarcarVendido');
+    const badgeVendido = document.getElementById('badgeVendido');
+    const presupuestoId = document.getElementById('presupuestoId').value;
+
+    if (!presupuestoId) {
+        // No hay presupuesto cargado, ocultar todo
+        btnVendido.style.display = 'none';
+        badgeVendido.style.display = 'none';
+        return;
+    }
+
+    if (vendido) {
+        btnVendido.style.display = 'none';
+        badgeVendido.style.display = 'inline-block';
+    } else {
+        btnVendido.style.display = 'inline-block';
+        badgeVendido.style.display = 'none';
+    }
+}
+
+async function toggleVendido() {
+    const presupuestoId = document.getElementById('presupuestoId').value;
+    if (!presupuestoId) {
+        showToast('Primero guarda el presupuesto', 'error');
+        return;
+    }
+
+    const vendidoActual = document.getElementById('presupuestoVendido').value === '1';
+    const nuevoEstado = !vendidoActual;
+
+    try {
+        const resultado = await marcarVendido(presupuestoId, nuevoEstado);
+        if (resultado.success) {
+            document.getElementById('presupuestoVendido').value = nuevoEstado ? '1' : '0';
+            actualizarUIVendido(nuevoEstado);
+            showToast(nuevoEstado ? 'Presupuesto marcado como vendido' : 'Venta desmarcada', 'success');
+        } else {
+            showToast('Error: ' + resultado.error, 'error');
+        }
+    } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+    }
 }
 
 // Nuevo presupuesto (limpiar formulario)
@@ -605,3 +906,293 @@ async function eliminarPresupuestoUI(id) {
         showToast('Error: ' + error.message, 'error');
     }
 }
+
+// ==================== SISTEMA DE VALIDACIÓN ====================
+
+// Mensajes de error amigables para errores técnicos
+const ERRORES_AMIGABLES = {
+    // Errores de red/servidor
+    'Failed to fetch': {
+        titulo: 'Sin conexión al servidor',
+        mensaje: 'No se pudo conectar con el servidor para generar el PDF.',
+        tip: 'Verificá que el servidor esté corriendo (node server.js) y que tengas conexión a internet.'
+    },
+    'NetworkError': {
+        titulo: 'Error de conexión',
+        mensaje: 'Hubo un problema de red al intentar procesar tu solicitud.',
+        tip: 'Revisá tu conexión a internet o intentá de nuevo en unos segundos.'
+    },
+    'json': {
+        titulo: 'Error al procesar la respuesta',
+        mensaje: 'El servidor no pudo procesar correctamente los datos del presupuesto.',
+        tip: 'Verificá que todos los campos estén completos y volvé a intentar.'
+    },
+    'Unexpected end of JSON': {
+        titulo: 'Respuesta incompleta del servidor',
+        mensaje: 'El servidor no pudo completar la operación.',
+        tip: 'Es posible que el servidor se haya reiniciado. Esperá unos segundos y volvé a intentar.'
+    },
+    '413': {
+        titulo: 'Imagen demasiado grande',
+        mensaje: 'La imagen del hotel que subiste es muy pesada.',
+        tip: 'Intentá subir una imagen más pequeña (menos de 5MB) o reducí su tamaño.'
+    },
+    '500': {
+        titulo: 'Error del servidor',
+        mensaje: 'Ocurrió un error interno al procesar tu solicitud.',
+        tip: 'Revisá que todos los datos estén correctos. Si el problema persiste, reiniciá el servidor.'
+    },
+    'timeout': {
+        titulo: 'Tiempo de espera agotado',
+        mensaje: 'El servidor tardó demasiado en responder.',
+        tip: 'Puede que el servidor esté ocupado. Esperá un momento y volvé a intentar.'
+    },
+    // Errores de Firebase
+    'firestore': {
+        titulo: 'Error al guardar datos',
+        mensaje: 'No se pudo guardar el presupuesto en la base de datos.',
+        tip: 'Verificá tu conexión a internet. Si el problema persiste, recargá la página.'
+    },
+    'permission-denied': {
+        titulo: 'Sin permiso para guardar',
+        mensaje: 'No tenés permisos para realizar esta acción.',
+        tip: 'Verificá que estés usando la configuración correcta de Firebase.'
+    },
+    'unavailable': {
+        titulo: 'Servicio no disponible',
+        mensaje: 'El servicio de base de datos no está disponible temporalmente.',
+        tip: 'Esperá unos segundos e intentá de nuevo. El servicio se recuperará pronto.'
+    },
+    'quota-exceeded': {
+        titulo: 'Límite alcanzado',
+        mensaje: 'Se alcanzó el límite de operaciones de la base de datos.',
+        tip: 'Esperá un momento antes de intentar nuevamente.'
+    },
+    // Errores de validación
+    'invalid': {
+        titulo: 'Datos incorrectos',
+        mensaje: 'Algunos datos del formulario no son válidos.',
+        tip: 'Revisá los campos marcados en rojo y corregí los errores.'
+    }
+};
+
+// Mostrar alerta de error amigable (reemplaza alert())
+function mostrarErrorAmigable(error) {
+    // Buscar mensaje amigable
+    let errorInfo = null;
+    const errorStr = error.toString().toLowerCase();
+
+    for (const [key, value] of Object.entries(ERRORES_AMIGABLES)) {
+        if (errorStr.includes(key.toLowerCase())) {
+            errorInfo = value;
+            break;
+        }
+    }
+
+    // Si no encontramos un mensaje específico, usar uno genérico
+    if (!errorInfo) {
+        errorInfo = {
+            titulo: 'Algo salió mal',
+            mensaje: 'Ocurrió un error inesperado al procesar tu solicitud.',
+            tip: 'Verificá que todos los campos estén completos y volvé a intentar. Si el problema persiste, reiniciá la página.'
+        };
+    }
+
+    // Crear overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'error-overlay';
+
+    // Crear alerta
+    const alert = document.createElement('div');
+    alert.className = 'error-alert';
+    alert.innerHTML = `
+        <div class="error-alert-header">
+            <span class="error-icon">⚠️</span>
+            <h3>${errorInfo.titulo}</h3>
+        </div>
+        <div class="error-alert-body">
+            <p>${errorInfo.mensaje}</p>
+            <div class="error-alert-tip">${errorInfo.tip}</div>
+        </div>
+        <div class="error-alert-footer">
+            <button class="error-alert-close">Entendido</button>
+        </div>
+    `;
+
+    // Agregar al DOM
+    document.body.appendChild(overlay);
+    document.body.appendChild(alert);
+
+    // Cerrar al hacer click
+    const cerrar = () => {
+        alert.remove();
+        overlay.remove();
+    };
+
+    alert.querySelector('.error-alert-close').addEventListener('click', cerrar);
+    overlay.addEventListener('click', cerrar);
+
+    // Cerrar con Escape
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            cerrar();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    // Log del error original para debugging
+    console.error('Error original:', error);
+}
+
+// Validaciones de campos
+const VALIDACIONES = {
+    nombreCliente: {
+        requerido: true,
+        mensaje: 'Ingresá el nombre del cliente para continuar'
+    },
+    nombreAgente: {
+        requerido: true,
+        mensaje: 'Ingresá tu nombre como agente'
+    },
+    tipoViaje: {
+        requerido: true,
+        mensaje: 'Seleccioná el tipo de viaje (ida, ida y vuelta, o multi-destino)'
+    },
+    cantidadPasajeros: {
+        requerido: true,
+        mensaje: 'Indicá cuántos pasajeros viajan',
+        validar: (valor) => {
+            const num = parseInt(valor);
+            if (isNaN(num) || num < 1) {
+                return 'La cantidad de pasajeros debe ser al menos 1';
+            }
+            return null;
+        }
+    },
+    valorPorPersona: {
+        requerido: true,
+        mensaje: 'Ingresá el valor por persona del presupuesto',
+        validar: (valor) => {
+            const num = parseFloat(valor);
+            if (isNaN(num) || num <= 0) {
+                return 'El valor debe ser mayor a 0';
+            }
+            return null;
+        }
+    }
+};
+
+// Mostrar error en un campo específico
+function mostrarErrorCampo(inputId, mensaje) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const formGroup = input.closest('.form-group');
+    if (!formGroup) return;
+
+    // Agregar clase de error
+    formGroup.classList.add('has-error');
+
+    // Buscar o crear mensaje de error
+    let errorMsg = formGroup.querySelector('.error-message');
+    if (!errorMsg) {
+        errorMsg = document.createElement('div');
+        errorMsg.className = 'error-message';
+        formGroup.appendChild(errorMsg);
+    }
+
+    errorMsg.textContent = mensaje;
+
+    // Hacer scroll al primer error
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus();
+}
+
+// Limpiar error de un campo
+function limpiarErrorCampo(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const formGroup = input.closest('.form-group');
+    if (!formGroup) return;
+
+    formGroup.classList.remove('has-error');
+}
+
+// Limpiar todos los errores
+function limpiarTodosLosErrores() {
+    document.querySelectorAll('.form-group.has-error').forEach(group => {
+        group.classList.remove('has-error');
+    });
+}
+
+// Validar formulario completo
+function validarFormulario() {
+    limpiarTodosLosErrores();
+
+    let primerError = null;
+
+    for (const [campo, config] of Object.entries(VALIDACIONES)) {
+        const input = document.getElementById(campo);
+        if (!input) continue;
+
+        const valor = input.value.trim();
+
+        // Validar campo requerido
+        if (config.requerido && !valor) {
+            if (!primerError) primerError = { campo, mensaje: config.mensaje };
+            mostrarErrorCampo(campo, config.mensaje);
+            continue;
+        }
+
+        // Validación personalizada
+        if (config.validar && valor) {
+            const error = config.validar(valor);
+            if (error) {
+                if (!primerError) primerError = { campo, mensaje: error };
+                mostrarErrorCampo(campo, error);
+            }
+        }
+    }
+
+    // Validaciones adicionales
+
+    // Verificar que haya al menos un vuelo con datos
+    const tipoViaje = document.getElementById('tipoViaje').value;
+    if (tipoViaje) {
+        const vuelos = document.querySelectorAll('.vuelo-item');
+        let tieneVueloValido = false;
+
+        vuelos.forEach(vuelo => {
+            const origen = vuelo.querySelector('.vuelo-origen')?.value;
+            const destino = vuelo.querySelector('.vuelo-destino')?.value;
+            if (origen && destino) tieneVueloValido = true;
+        });
+
+        if (!tieneVueloValido && vuelos.length > 0) {
+            showToast('Completá al menos un vuelo con origen y destino', 'error');
+            if (!primerError) {
+                primerError = { campo: 'vuelos', mensaje: 'Completar vuelos' };
+            }
+        }
+    }
+
+    return primerError === null;
+}
+
+// Agregar listeners para limpiar errores cuando el usuario escribe
+function inicializarValidacionEnTiempoReal() {
+    for (const campo of Object.keys(VALIDACIONES)) {
+        const input = document.getElementById(campo);
+        if (input) {
+            input.addEventListener('input', () => limpiarErrorCampo(campo));
+            input.addEventListener('change', () => limpiarErrorCampo(campo));
+        }
+    }
+}
+
+// Inicializar validación cuando carga la página
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(inicializarValidacionEnTiempoReal, 500);
+});
