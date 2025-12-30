@@ -444,10 +444,11 @@ function generarHTML(datos) {
         <div class="hoteles-container">${hotelesHTML}</div>` : ''}
         <div class="barra-titulo">${t.masInfo}</div>
         <div class="info-container">
+            ${idioma !== 'pt' ? `
             <div class="info-item">
                 <img class="info-icon" src="${cotizacionPath}" alt="Cotización">
                 <div class="info-texto"><strong>${t.cotizacion}:</strong> ${t.cotizacionTexto}</div>
-            </div>
+            </div>` : ''}
             <div class="info-item">
                 <img class="info-icon" src="${plazoPath}" alt="Plazo">
                 <div class="info-texto"><strong>${t.plazo}:</strong> ${t.plazoTexto}</div>
