@@ -94,7 +94,7 @@ function generarHTML(datos) {
         return '';
     };
 
-    const logoPath = toBase64('Logo.png');
+    const logoPath = toBase64('logo-azul.png');
     const usuarioPath = toBase64('Usuario.png');
     const cotizacionPath = toBase64('Cotizacion.png');
     const plazoPath = toBase64('Plazo.png');
@@ -342,7 +342,7 @@ function generarHTML(datos) {
         .barra-azul-top { background: #435c91; height: 4mm; width: 100%; }
         .barra-azul-bottom { background: #435c91; height: 5mm; width: 100%; position: absolute; bottom: -1px; left: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; padding: 5mm 10mm; background: white; }
-        .logo img { height: 18mm; }
+        .logo img { height: 14.4mm; }
         .datos-agente { text-align: right; font-size: 9px; color: #1e293b; }
         .datos-agente p { margin: 2px 0; }
         .datos-agente strong { font-weight: bold; }
@@ -389,7 +389,7 @@ function generarHTML(datos) {
         .hotel-datos { font-size: 9px; color: #1e293b; flex: 1; }
         .hotel-datos p { margin: 1mm 0; }
         .hotel-datos strong { font-weight: bold; }
-        .info-container { padding: 3mm 10mm 4mm 10mm; overflow: hidden; }
+        .info-container { padding: 3mm 55mm 4mm 10mm; overflow: hidden; }
         .info-item { display: flex; align-items: center; gap: 0; padding: 1mm 0; font-size: 11px; color: #1e293b; }
         .info-icon { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; margin-right: 3mm; }
         .info-texto strong { font-weight: bold; }
