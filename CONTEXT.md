@@ -1,7 +1,7 @@
 # FrestPresupuesto - Documentacion Completa
 
 > Sistema de presupuestos de viaje para Freest Travel
-> Ultima actualizacion: 30 de Diciembre 2025
+> Ultima actualizacion: 2 de Enero 2026
 
 ---
 
@@ -330,7 +330,7 @@ login.html
 
 ---
 
-## Estado Actual (30 Dic 2025)
+## Estado Actual (2 Ene 2026)
 
 ### Completado
 - [x] Dashboard Admin con estadisticas de ventas
@@ -343,6 +343,8 @@ login.html
 - [x] Sin cotizacion en PDFs portugues (brasileros pagan en Real)
 - [x] Selector de tramos para vuelos con multiples segmentos
 - [x] Eliminacion de archivos duplicados (centralizado en api/generar-pdf.js)
+- [x] Nuevo logo azul (logo-azul.png) reducido 20%
+- [x] Fix sobreposicion recuadro valores con texto "Mas informacion"
 
 ### Pendiente
 - [ ] Cambiar contrasenas de produccion
@@ -351,6 +353,14 @@ login.html
 ---
 
 ## Historial de Actualizaciones
+
+### 2026-01-02
+- **Nuevo logo**:
+  - Cambiado de `Logo.png` a `logo-azul.png`
+  - Reducido 20% (de 18mm a 14.4mm de altura)
+- **Fix PDF sobreposicion**:
+  - El recuadro naranja de "Valor por persona / Valor total" se superponia con el texto de "Plazo de la propuesta" cuando habia muchos vuelos
+  - Solucion: padding-right de 55mm en `.info-container` para dejar espacio al recuadro de valores
 
 ### 2025-12-30
 - **PDF Vuelos mejorado**:

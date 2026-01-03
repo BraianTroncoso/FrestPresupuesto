@@ -339,10 +339,10 @@ function generarHTML(datos) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Helvetica', Arial, sans-serif; background: white; }
         .pdf-container { width: 210mm; height: 297mm; background: white; position: relative; overflow: hidden; }
-        .barra-azul-top { background: #435c91; height: 4mm; width: 100%; }
-        .barra-azul-bottom { background: #435c91; height: 5mm; width: 100%; position: absolute; bottom: -1px; left: 0; }
+        .barra-azul-top { background: #00366B; height: 4mm; width: 100%; }
+        .barra-azul-bottom { background: #00366B; height: 5mm; width: 100%; position: absolute; bottom: -1px; left: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; padding: 5mm 10mm; background: white; }
-        .logo img { height: 14.4mm; }
+        .logo img { height: 11.5mm; }
         .datos-agente { text-align: right; font-size: 9px; color: #1e293b; }
         .datos-agente p { margin: 2px 0; }
         .datos-agente strong { font-weight: bold; }
@@ -350,7 +350,7 @@ function generarHTML(datos) {
         .destino-info { background: #ed6e1a; width: 60%; padding: 4mm 10mm; color: white; position: relative; z-index: 1; }
         .destino-info h2 { font-size: 16px; font-weight: bold; margin-bottom: 2px; }
         .destino-info p { font-size: 14px; }
-        .numero-presupuesto { background: #435c91; width: 40%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: bold; position: relative; z-index: 1; }
+        .numero-presupuesto { background: #00366B; width: 40%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: bold; position: relative; z-index: 1; }
         .barra-destino::after { content: ''; position: absolute; left: 60%; top: -2px; height: calc(100% + 4px); width: 30px; background: white; transform: translateX(-50%) skewX(-15deg); z-index: 2; }
         .seccion { padding: 4mm 10mm; }
         .seccion-header { display: flex; align-items: center; gap: 0; margin-bottom: 3mm; }
@@ -364,7 +364,7 @@ function generarHTML(datos) {
         .barra-titulo { background: #ed6e1a; color: white; padding: 3mm 10mm; font-size: 14px; font-weight: bold; }
         .vuelos-container { padding: 4mm 0; }
         .vuelo { padding: 2mm 10mm; display: flex; align-items: center; gap: 5mm; }
-        .vuelo-badge { background: #435c91; color: white; padding: 1mm 3mm; border-radius: 3px; font-size: 7px; font-weight: bold; }
+        .vuelo-badge { background: #00366B; color: white; padding: 1mm 3mm; border-radius: 3px; font-size: 7px; font-weight: bold; }
         .vuelo-tiempo { text-align: center; }
         .vuelo-tiempo .hora { font-size: 16px; font-weight: bold; color: #1e293b; }
         .vuelo-tiempo .hora sup { font-size: 9px; color: #ed6e1a; font-weight: bold; }
@@ -372,15 +372,15 @@ function generarHTML(datos) {
         .vuelo-flecha { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
         .vuelo-flecha .duracion { font-size: 9px; color: #64748b; margin-bottom: 3px; }
         .vuelo-flecha .linea-container { width: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
-        .vuelo-flecha .linea { width: 70%; height: 2px; background: linear-gradient(90deg, #435c91 0%, #ed6e1a 100%); border-radius: 1px; }
-        .vuelo-flecha .avion { position: absolute; width: 16px; height: 16px; color: #435c91; }
+        .vuelo-flecha .linea { width: 70%; height: 2px; background: linear-gradient(90deg, #00366B 0%, #ed6e1a 100%); border-radius: 1px; }
+        .vuelo-flecha .avion { position: absolute; width: 16px; height: 16px; color: #00366B; }
         .vuelo-flecha .avion svg { width: 100%; height: 100%; }
         .vuelo-flecha .avion.ida { right: 10%; transform: rotate(90deg); }
         .vuelo-flecha .avion.vuelta { left: 10%; transform: rotate(-90deg); }
         .vuelo-flecha .escalas { font-size: 9px; color: #ed6e1a; margin-top: 3px; font-weight: 500; }
         .tarifa-info { display: flex; align-items: center; gap: 2mm; padding: 2mm 10mm; font-size: 9px; color: #64748b; }
         .tarifa-descripcion { color: #64748b; font-weight: 500; }
-        .vuelos-seccion-titulo { font-size: 10px; font-weight: 600; color: #435c91; padding: 2mm 10mm 1mm 10mm; margin-top: 1mm; text-transform: uppercase; letter-spacing: 0.5px; }
+        .vuelos-seccion-titulo { font-size: 10px; font-weight: 600; color: #00366B; padding: 2mm 10mm 1mm 10mm; margin-top: 1mm; text-transform: uppercase; letter-spacing: 0.5px; }
         .hoteles-container { display: flex; flex-wrap: wrap; gap: 3mm; padding: 3mm 10mm; }
         .hotel { display: flex; gap: 3mm; flex: 1 1 calc(50% - 3mm); min-width: 85mm; max-width: 100%; }
         .hoteles-container .hotel:only-child { flex: 1 1 100%; max-width: 100%; }
